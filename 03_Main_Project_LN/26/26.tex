@@ -13,7 +13,7 @@
 
 
 % AUTHORS
-\author{Group 26, Member 1 (25\%), Member 2 (25\%), Member 3 (25\%), Member 4 (25\%)}
+\author{Group 26 | André Maçorano (110203, 25\%), David Fonseca (109494, 25\%), Miguel Ferreira (110268, 25\%), Vasyl Podvirnyy (109545, 25\%)}
 %\affil{Instituto Superior Técnico, Universidade de Lisboa}
 
 \begin{document}
@@ -44,7 +44,7 @@ This work addresses the task of automatically predicting the medical specialty o
 
 \subsection{Data Analysis}
 
-The training set consists of 2{,}613 clinical records sourced from a public medical transcription dataset~\cite{mtsamples}. Each record contains five fields: \texttt{medical\_specialty} (the target label), \texttt{description} (a short one-to-two sentence summary of the visit), \texttt{sample\_name} (the procedure or visit type), \texttt{transcription} (the full clinical note), and \texttt{keywords} (a comma-separated list of relevant terms).
+The base dataset provided for this project consists of 2{,}613 annotated clinical records distributed across 12 medical specialties. Each record contains five fields: \texttt{medical\_specialty} (the target label to predict), \texttt{description} (a short one-to-two sentence summary of the visit), \texttt{sample\_name} (the procedure or visit type), \texttt{transcription} (the full clinical note), and \texttt{keywords} (a comma-separated list of relevant terms).
 
 \textbf{Class distribution.} Table~\ref{tab:class_dist} shows the distribution of samples across the 12 specialties. The dataset exhibits severe class imbalance: the majority class (Surgery) contains 876 samples, whereas the minority class (Dermatology) contains only 25 samples --- a ratio of approximately 35:1. Such imbalance is known to cause classifiers to default to frequent classes, resulting in near-zero recall for minority classes \cite{imbalance_survey}.
 
@@ -73,12 +73,12 @@ Dermatology              &  25 &  1.0\% \\
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:class_dist} provides a visual representation of this distribution.
+Figure~\ref{fig:class_dist} provides a visual representation of this distribution. Figure~\ref{fig:text_lengths} in the Appendix shows the average word count per field and specialty.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{figures/fig1_class_distribution.png}
-\caption{Class distribution of the training set. Surgery dominates with 33.5\% of all records.}
+\caption{Class distribution of the base dataset. Surgery dominates with 33.5\% of all records.}
 \label{fig:class_dist}
 \end{figure}
 
@@ -134,6 +134,13 @@ Bibliography does not count for the 3 pages limit.
 \section*{Appendix A: Extra Figures and Tables}
 
 Maximum one page (it does not count for the 3 pages limit): just extra figures and tables. \textbf{Notice that we should be able to understand the 3 pages paper without these figures and tables.}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2_text_lengths.png}
+\caption{Average word count per field (description vs.\ transcription) across all 12 specialties.}
+\label{fig:text_lengths}
+\end{figure}
 
 \section{Evaluation and tips (remove this section before submission)}
 
