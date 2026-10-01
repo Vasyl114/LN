@@ -28,7 +28,7 @@ The automatic classification of clinical documents by medical specialty is a pra
 
 This work addresses the task of automatically predicting the medical specialty of a clinical record given its textual content. The dataset comprises 2{,}613 annotated records distributed across 12 specialties, where each record contains multiple associated text fields: a short description, a procedure name, a full clinical transcription, and a list of keywords. The dataset is characterised by a severe class imbalance, with the majority class (Surgery) comprising 33.5\% of all samples and the minority class (Dermatology) comprising only 1.0\%.
 
-\textbf{Research Question:} Does fine-tuning a domain-specific language model (\ac{clinicalbert}) on short clinical descriptions yield higher classification accuracy than classical algorithms trained on the full, concatenated clinical records? This question is motivated by a fundamental trade-off in \ac{nlp}: complex models may extract deeper linguistic patterns from limited text, whereas simpler models may compensate through the sheer volume of information available in longer fields. Answering this question guides our choice of models, our experimental design, and the interpretation of our results.
+\textbf{Research Question:} Does fine-tuning a domain-specific language model on short clinical descriptions yield higher classification accuracy than classical algorithms trained on the full, concatenated clinical records? This question is motivated by a fundamental trade-off in \ac{nlp}: complex models may extract deeper linguistic patterns from limited text, whereas simpler models may compensate through the sheer volume of information available in longer fields. Answering this question guides our choice of models, our experimental design, and the interpretation of our results.
 
 % Acronym definitions (used consistently throughout)
 \acrodef{nlp}{Natural Language Processing}
@@ -36,7 +36,7 @@ This work addresses the task of automatically predicting the medical specialty o
 \acrodef{mnb}{Multinomial Naive Bayes}
 \acrodef{lr}{Logistic Regression}
 \acrodef{svm}{Support Vector Machine}
-\acrodef{clinicalbert}{Bio\_ClinicalBERT}
+
 
 % ============================================================
 \section{Data}
@@ -87,9 +87,46 @@ Figure~\ref{fig:class_dist} provides a visual representation of this distributio
 \textbf{Observation 2 --- Vocabulary overlap between related specialties introduces classification ambiguity.} Analysis of the most frequent terms in the \texttt{description} field reveals significant lexical overlap between Surgery and Neurosurgery (shared top terms: \emph{right}, \emph{left}, \emph{anterior}, \emph{bilateral}, \emph{patient}), suggesting that word-frequency models may struggle to separate these two classes without attending to specialty-specific terms such as \emph{discectomy}, \emph{cervical}, or \emph{fusion}, which are present in Neurosurgery but rare in general Surgery. In contrast, Radiology contains highly distinctive vocabulary (\emph{MRI}, \emph{contrast}, \emph{ultrasound}, \emph{spine}, \emph{brain}) with limited overlap with other specialties, which may explain why it is easier to identify despite having only 217 training samples. Additionally, 30 records contain empty transcription fields and 158 records contain descriptions of fewer than five words, representing potential sources of noise in models relying on these fields.
 
 \subsection{Data Augmentation}
-% TODO: To be completed after Phase 2 (data augmentation script and strategy).
-% This section will describe the augmentation strategy used to address the class imbalance
-% identified in the Data Analysis subsection above.
+
+The class imbalance identified in Section~2.1 motivates an explicit data augmentation strategy. Without intervention, a classifier trained on the base dataset is incentivised to predict Surgery for all inputs, achieving trivially high accuracy on the majority class while producing near-zero recall on minority classes. To address this, we applied augmentation to the four most underrepresented classes: Dermatology (25 samples), Psychiatry-Psychology (40), Ophthalmology (71), and Neurosurgery (78), targeting 400 samples per class.
+
+\textbf{Augmentation techniques.} We implemented 15 programmatic text transformation variants drawn from the \ac{eda} framework~\cite{wei2019eda}, extended with domain-specific adaptations. The variants span a spectrum from beneficial to intentionally noisy, as follows:
+
+\begin{itemize}
+    \item \textbf{Synonym replacement} (10\% and 20\% rates): non-protected words are replaced using a curated clinical synonym map (e.g., \emph{patient} $\rightarrow$ \emph{individual}, \emph{normal} $\rightarrow$ \emph{unremarkable}) and WordNet~\cite{nltk} for general vocabulary. Protected terms (all-caps abbreviations, numeric tokens, spinal level codes such as C3--C4, and hyphenated compound terms) are never modified.
+    \item \textbf{Random deletion} (10\% and 20\% rates): applied exclusively to the \texttt{transcription} field to protect the short \texttt{description} field used by language models.
+    \item \textbf{Compression}: filler words (\emph{very}, \emph{typically}, \emph{generally}, etc.) are removed to produce shorter, more telegraphic variants.
+    \item \textbf{Abbreviation expansion}: common medical shorthand is expanded (e.g., \emph{pt} $\rightarrow$ \emph{patient}, \emph{dx} $\rightarrow$ \emph{diagnosis}), producing longer, more verbose variants.
+    \item \textbf{Case and punctuation variation}: lowercase conversion and trailing punctuation removal simulate informal or rushed clinical note entry.
+    \item \textbf{Number-to-word conversion}: standalone numerals are replaced with their written forms (\emph{3 lesions} $\rightarrow$ \emph{three lesions}).
+    \item \textbf{Sentence deletion}: one to two random sentences are removed from the \texttt{transcription} to simulate incomplete notes.
+    \item \textbf{Keyword subset sampling}: a random 65--85\% of keywords are retained and shuffled.
+    \item \textbf{Heavy noise} (intentional): 20\% deletion + three word swaps + full lowercase; applied as a controlled experiment only.
+\end{itemize}
+
+All protected medical terminology was identified via a rule-based filter covering all-caps tokens, alphanumeric dosage codes, and hyphenated compound terms, ensuring that clinical precision is preserved in beneficial variants.
+
+\textbf{Validation on development set.} To verify the effect of augmentation empirically, we held out 20\% of the original base dataset as a fixed development set (523 records) prior to any augmentation. The baseline classifier (\ac{mnb} with \ac{tfidf}) was trained and evaluated under three conditions, always tested on the same fixed development set. Results are shown in Table~\ref{tab:aug_comparison}.
+
+\begin{table}[h]
+\centering
+\caption{Baseline classifier performance before and after augmentation (fixed dev set, 523 records).}
+\label{tab:aug_comparison}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Condition} & \textbf{Accuracy} & \textbf{Macro F1} \\
+\midrule
+No augmentation        & 37.1\% & 10.4\% \\
+Clean augmentation     & 38.2\% & 22.8\% \\
+Noisy augmentation     & 38.2\% & 22.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Overall accuracy improved by only +1.1 percentage points, but macro F1 more than doubled from 10.4\% to 22.8\%. This reveals that the improvement from augmentation is not primarily in overall accuracy but in the model's ability to recognise minority classes that were previously predicted with near-zero recall. Notably, the noisy condition produced virtually identical results (38.2\%, macro F1 22.6\%), indicating the baseline classifier is not materially affected by the moderate noise introduced. However, several classes --- Gastroenterology, Neurology, Obstetrics-Gynecology --- remained at 0\% F1 even after augmentation, as they were not included in the augmented classes. This confirms that augmentation alone is not sufficient and that a more capable model is required to achieve competitive performance across all classes.
+
+The final augmented training set contains 4{,}041 records. Class distribution after augmentation is shown in Table~\ref{tab:aug_dist}.
 
 % ============================================================
 \section{Models}
@@ -141,6 +178,34 @@ Maximum one page (it does not count for the 3 pages limit): just extra figures a
 \caption{Average word count per field (description vs.\ transcription) across all 12 specialties.}
 \label{fig:text_lengths}
 \end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Class distribution before and after augmentation.}
+\label{tab:aug_dist}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Specialty} & \textbf{Before} & \textbf{After} \\
+\midrule
+Surgery                  & 876 & 876 \\
+Cardiovascular-Pulmonary & 299 & 299 \\
+Orthopedic               & 292 & 292 \\
+Radiology                & 217 & 217 \\
+General Medicine         & 207 & 207 \\
+Gastroenterology         & 192 & 192 \\
+Neurology                & 181 & 181 \\
+Obstetrics-Gynecology    & 135 & 135 \\
+Neurosurgery             &  78 & 415 \\
+Ophthalmology            &  71 & 414 \\
+Psychiatry-Psychology    &  40 & 408 \\
+Dermatology              &  25 & 405 \\
+\midrule
+\textbf{Total}           & \textbf{2,613} & \textbf{4,041} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 \section{Evaluation and tips (remove this section before submission)}
 
