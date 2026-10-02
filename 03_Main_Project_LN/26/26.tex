@@ -9,7 +9,7 @@
 \usepackage{acronym}
 
 % TITLE
-\title{Clinical Text Classification: Comparing a Domain-Specific Language Model on Short Fields Against Classical Algorithms on Full Clinical Records}
+\title{Medical Specialty Classification from Clinical Notes: Does a Language Model Beat Classical Text Features?}
 
 
 % AUTHORS
@@ -24,11 +24,9 @@
 \section{Introduction}
 % ============================================================
 
-The automatic classification of clinical documents by medical specialty is a practical challenge with direct implications for healthcare administration, electronic health record management, and clinical decision support. Clinical notes are written in highly specialised medical language, vary enormously in length and structure, and are produced under time pressure, resulting in noisy, heterogeneous text that is difficult to process with general-purpose tools.
+Automatically routing clinical documents to the correct medical specialty has clear practical value for hospital administration and electronic health record management. Yet clinical notes are short, noisy, and written in highly specialised language, which makes the task non-trivial.
 
-This work addresses the task of automatically predicting the medical specialty of a clinical record given its textual content. The dataset comprises 2{,}613 annotated records distributed across 12 specialties, where each record contains multiple associated text fields: a short description, a procedure name, a full clinical transcription, and a list of keywords. The dataset is characterised by a severe class imbalance, with the majority class (Surgery) comprising 33.5\% of all samples and the minority class (Dermatology) comprising only 1.0\%.
-
-\textbf{Research Question:} Does fine-tuning a domain-specific language model on short clinical descriptions yield higher classification accuracy than classical algorithms trained on the full, concatenated clinical records? This question is motivated by a fundamental trade-off in \ac{nlp}: complex models may extract deeper linguistic patterns from limited text, whereas simpler models may compensate through the sheer volume of information available in longer fields. Answering this question guides our choice of models, our experimental design, and the interpretation of our results.
+In this work we ask: does a domain-specific language model, fine-tuned on short clinical descriptions, outperform a classical classifier trained on the full available text? Our experiments use a dataset of 2{,}613 annotated records across 12 specialties, heavily imbalanced towards Surgery, and we track both accuracy and per-class F1 score to account for that imbalance.
 
 % Acronym definitions (used consistently throughout)
 \acrodef{nlp}{Natural Language Processing}
@@ -106,25 +104,7 @@ The class imbalance identified in Section~2.1 motivates an explicit data augment
 
 All protected medical terminology was identified via a rule-based filter covering all-caps tokens, alphanumeric dosage codes, and hyphenated compound terms, ensuring that clinical precision is preserved in beneficial variants.
 
-\textbf{Validation on development set.} To verify the effect of augmentation empirically, we held out 20\% of the original base dataset as a fixed development set (523 records) prior to any augmentation. The baseline classifier (\ac{mnb} with \ac{tfidf}) was trained and evaluated under three conditions, always tested on the same fixed development set. Results are shown in Table~\ref{tab:aug_comparison}.
 
-\begin{table}[h]
-\centering
-\caption{Baseline classifier performance before and after augmentation (fixed dev set, 523 records).}
-\label{tab:aug_comparison}
-\small
-\begin{tabular}{lrr}
-\toprule
-\textbf{Condition} & \textbf{Accuracy} & \textbf{Macro F1} \\
-\midrule
-No augmentation        & 37.1\% & 10.4\% \\
-Clean augmentation     & 38.2\% & 22.8\% \\
-Noisy augmentation     & 38.2\% & 22.6\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Overall accuracy improved by only +1.1 percentage points, but macro F1 more than doubled from 10.4\% to 22.8\%. This reveals that the improvement from augmentation is not primarily in overall accuracy but in the model's ability to recognise minority classes that were previously predicted with near-zero recall. Notably, the noisy condition produced virtually identical results (38.2\%, macro F1 22.6\%), indicating the baseline classifier is not materially affected by the moderate noise introduced. However, several classes --- Gastroenterology, Neurology, Obstetrics-Gynecology --- remained at 0\% F1 even after augmentation, as they were not included in the augmented classes. This confirms that augmentation alone is not sufficient and that a more capable model is required to achieve competitive performance across all classes.
 
 The final augmented training set contains 4{,}041 records. Class distribution after augmentation is shown in Table~\ref{tab:aug_dist}.
 
