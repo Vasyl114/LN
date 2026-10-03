@@ -20,14 +20,6 @@
 
 \maketitle
 
-% ============================================================
-\section{Introduction}
-% ============================================================
-
-Automatically routing clinical documents to the correct medical specialty has clear practical value for hospital administration and electronic health record management. Yet clinical notes are short, noisy, and written in highly specialised language, which makes the task non-trivial.
-
-In this work we ask: does a domain-specific language model, fine-tuned on short clinical descriptions, outperform a classical classifier trained on the full available text? Our experiments use a dataset of 2{,}613 annotated records across 12 specialties, heavily imbalanced towards Surgery, and we track both accuracy and per-class F1 score to account for that imbalance.
-
 % Acronym definitions (used consistently throughout)
 \acrodef{nlp}{Natural Language Processing}
 \acrodef{tfidf}{Term Frequency--Inverse Document Frequency}
@@ -36,119 +28,98 @@ In this work we ask: does a domain-specific language model, fine-tuned on short 
 \acrodef{svm}{Support Vector Machine}
 \acrodef{eda}{Easy Data Augmentation}
 
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+Routing a clinical document to the correct medical specialty supports triage and the organisation of electronic health records. The task is difficult because clinical notes are long, written in specialised language, and often relevant to more than one specialty.
+
+\textbf{Research question.} Does a domain-specific language model, fine-tuned only on the short description of a clinical record, outperform a classical classifier trained on all the text available for that record? The answer is not obvious: the language model brings prior knowledge of clinical language but reads one or two sentences, whereas the classical model has no prior knowledge but reads the full note and its keywords.
+
+To answer it, we first analyse the data (Section~\ref{sec:analysis}) and reduce its class imbalance through augmentation (Section~\ref{sec:augmentation}). We then compare a baseline, a classical model and a clinical language model (Section~\ref{sec:models}) on a held-out portion of the training data (Section~\ref{sec:setup}), and examine their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
 
 % ============================================================
 \section{Data}
+\label{sec:data}
 % ============================================================
 
 \subsection{Data Analysis}
+\label{sec:analysis}
 
-The base dataset provided for this project consists of 2{,}613 annotated clinical records distributed across 12 medical specialties. Each record contains five fields: \texttt{medical\_specialty} (the target label to predict), \texttt{description} (a short one-to-two sentence summary of the visit), \texttt{sample\_name} (the procedure or visit type), \texttt{transcription} (the full clinical note), and \texttt{keywords} (a comma-separated list of relevant terms).
+\textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description} (one or two sentences), \texttt{sample\_name}, \texttt{transcription} (the full note) and \texttt{keywords}. The file, adapted from a public Kaggle dataset, parses into 2{,}616 rows, but in seven of them the description cell had absorbed the 56 records that followed it. We split these cells back in memory, which gives 2{,}669 records.
 
-\textbf{Class distribution.} Table~\ref{tab:class_dist} shows the distribution of samples across the 12 specialties. The dataset exhibits severe class imbalance: the majority class (Surgery) contains 876 samples, whereas the minority class (Dermatology) contains only 25 samples --- a ratio of approximately 35:1. Such imbalance is known to cause classifiers to default to frequent classes, resulting in near-zero recall for minority classes \cite{imbalance_survey}.
+\textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance: Surgery holds 893 records (33.5\%) and Dermatology 25 (0.9\%), a ratio of approximately 36:1, which biases classifiers towards the frequent classes~\cite{imbalance_survey}.
 
 \begin{table}[h]
 \centering
-\caption{Class distribution of the training set.}
+\caption{Records per specialty in the training data, and in the training file after augmentation (Section~\ref{sec:augmentation}).}
 \label{tab:class_dist}
 \small
-\begin{tabular}{lrr}
+\begin{tabular}{lrrr}
 \toprule
-\textbf{Specialty} & \textbf{Count} & \textbf{\%} \\
+\textbf{Specialty} & \textbf{Records} & \textbf{\%} & \textbf{After} \\
 \midrule
-Surgery                  & 876 & 33.5\% \\
-Cardiovascular-Pulmonary & 299 & 11.4\% \\
-Orthopedic               & 292 & 11.2\% \\
-Radiology                & 217 &  8.3\% \\
-General Medicine         & 207 &  7.9\% \\
-Gastroenterology         & 192 &  7.3\% \\
-Neurology                & 181 &  6.9\% \\
-Obstetrics-Gynecology    & 135 &  5.2\% \\
-Neurosurgery             &  78 &  3.0\% \\
-Ophthalmology            &  71 &  2.7\% \\
-Psychiatry-Psychology    &  40 &  1.5\% \\
-Dermatology              &  25 &  1.0\% \\
+Surgery                  & 893 & 33.5 & 893 \\
+Cardiovascular-Pulmonary & 309 & 11.6 & 462 \\
+Orthopedic               & 300 & 11.2 & 460 \\
+Radiology                & 222 &  8.3 & 444 \\
+General Medicine         & 212 &  7.9 & 442 \\
+Gastroenterology         & 195 &  7.3 & 439 \\
+Neurology                & 184 &  6.9 & 437 \\
+Obstetrics-Gynecology    & 136 &  5.1 & 427 \\
+Neurosurgery             &  79 &  3.0 & 416 \\
+Ophthalmology            &  73 &  2.7 & 415 \\
+Psychiatry-Psychology    &  41 &  1.5 & 408 \\
+Dermatology              &  25 &  0.9 & 405 \\
+\midrule
+\textbf{Total}           & \textbf{2{,}669} & \textbf{100} & \textbf{5{,}648} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:class_dist} provides a visual representation of this distribution. Figure~\ref{fig:text_lengths} in the Appendix shows the average word count per field and specialty.
+\textbf{Observation 1 --- the same note is listed under several specialties.} Of the 1{,}838 distinct transcriptions, 731 occur under more than one label, involving 1{,}530 records (58.0\% of those with a transcription); the copies always share the same description and sample name. The most frequent pairs are Orthopedic/Surgery (152 notes) and Cardiovascular-Pulmonary/Surgery (124), and 92\% of the Neurosurgery records also exist under another label. For these records, the text of the note cannot determine the label.
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{figures/fig1_class_distribution.png}
-\caption{Class distribution of the base dataset. Surgery dominates with 33.5\% of all records.}
-\label{fig:class_dist}
-\end{figure}
+\textbf{Observation 2 --- the label is written in the keywords.} In all 2{,}219 records that have keywords, the first keyword is the specialty itself (e.g., ``cardiovascular / pulmonary, chest pain, \ldots''), so the keywords are the only field that separates the copies of Observation~1. However, 450 records (16.9\%) have no keywords, and a model that reads only the description never sees this signal.
 
-\textbf{Observation 1 --- Field length varies substantially across specialties.} The \texttt{description} field is short and consistent (mean: 28.4 words), making it suitable for models with strict token limits. The \texttt{transcription} field is significantly longer (mean: 452.2) with high variance: Radiology averages 275.8 words, whereas Psychiatry-Psychology averages 823.7. A classical model trained on the full transcription may introduce a length bias favouring verbose specialties.
-
-\textbf{Observation 2 --- Vocabulary overlap introduces classification ambiguity.} Frequent terms in the \texttt{description} field reveal significant lexical overlap between Surgery and Neurosurgery (shared top terms: \emph{right}, \emph{left}, \emph{patient}), making separation difficult without specialty-specific terms (e.g., \emph{discectomy}). In contrast, Radiology contains highly distinctive vocabulary (\emph{MRI}, \emph{ultrasound}) making it easier to identify. Finally, 30 empty transcriptions and 158 short descriptions (under 5 words) were found, representing potential noise.
+Descriptions average 18.9 words and transcriptions 457.0, from 275.3 (Radiology) to 818.9 (Psychiatry-Psychology); see Figure~\ref{fig:text_lengths} in the Appendix.
 
 \subsection{Data Augmentation}
+\label{sec:augmentation}
 
-The class imbalance identified in Section~2.1 motivates an explicit data augmentation strategy. An unbalanced and relatively small dataset is a poor training base: without intervention, a classifier defaults to predicting the majority class (Surgery), resulting in near-zero recall for underrepresented specialties. To build a more balanced training set, we applied programmatic data augmentation to all 11 minority classes that had fewer than 400 samples, generating numerous new records to reach a more uniform distribution.
+\textbf{Motivation.} The four smallest classes have 25 to 79 records (Table~\ref{tab:class_dist}). We therefore enlarge every class below 400 records.
 
-\textbf{Augmentation techniques.} To ensure diversity without losing clinical meaning, we implemented 15 text transformation variants inspired by the \ac{eda} framework~\cite{wei2019eda}. These include beneficial techniques such as curated clinical synonym replacement (e.g., \emph{patient} $\rightarrow$ \emph{individual}), structural changes (e.g., sentence deletion, abbreviation expansion, and filler-word compression), and surface variations (e.g., case and punctuation changes). Additionally, intentional noise (random deletion and word swaps) was introduced as a controlled ablation. 
+\textbf{Strategy.} New records are derived from existing ones through 15 variants inspired by \ac{eda}~\cite{wei2019eda}, which combine: synonym replacement (a curated map of 28 clinical terms, then the most common WordNet~\cite{miller1995wordnet} sense for other words); deletion of 5--20\% of the words or of one or two sentences, in the transcription only; swapping of adjacent words; removal of filler words; expansion of seven unambiguous abbreviations (e.g., \emph{hx} $\rightarrow$ \emph{history}); lowercasing; and rewriting of isolated numbers as words. Keywords are subsampled (65--85\%) and shuffled. Synonym replacement and word deletion never touch upper-case abbreviations, numbers, dosages, spinal levels, hyphenated compounds, or laterality and negation words (e.g., \emph{left}, \emph{no}).
 
-Crucially, all protected medical terminology (abbreviations, dosages, and hyphenated compounds) was shielded from modification using a rule-based filter to preserve clinical precision. 
+\textbf{Procedure.} The data are split into a training portion (80\%, 2{,}135 records) and a held-out portion (20\%, 534 records), stratified by label (random seed 42). Records are generated only from the training portion. In pass $c$ over a class, record $r$ receives variant $(r + c) \bmod 15$, until the class has 400 training records; outputs identical to an existing record are discarded.
 
-The final augmented training set contains 5{,}624 records. Class distribution after augmentation is shown in Table~\ref{tab:aug_dist}.
-
-\begin{table}[h]
-\centering
-\caption{Class distribution before and after augmentation.}
-\label{tab:aug_dist}
-\small
-\begin{tabular}{lrr}
-\toprule
-\textbf{Specialty} & \textbf{Before} & \textbf{After} \\
-\midrule
-Surgery                  & 876 & 876 \\
-Cardiovascular-Pulmonary & 299 & 460 \\
-Orthopedic               & 292 & 459 \\
-Radiology                & 217 & 444 \\
-General Medicine         & 207 & 442 \\
-Gastroenterology         & 192 & 438 \\
-Neurology                & 181 & 436 \\
-Obstetrics-Gynecology    & 135 & 427 \\
-Neurosurgery             &  78 & 415 \\
-Ophthalmology            &  71 & 414 \\
-Psychiatry-Psychology    &  40 & 408 \\
-Dermatology              &  25 & 405 \\
-\midrule
-\textbf{Total}           & \textbf{2,613} & \textbf{5,624} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\textbf{Outcome.} This produced 2{,}979 records for 11 classes. The training file (original plus generated records, column ``After'' of Table~\ref{tab:class_dist}) has 5{,}648 records, and the ratio between the largest and the smallest class falls from approximately 36:1 to 2:1. The effect on classification is reported in Section~\ref{sec:results}.
 
 % ============================================================
 \section{Models}
+\label{sec:models}
 % ============================================================
-% TODO: To be completed after Phase 3.
 
 % ============================================================
 \section{Experimental Setup}
+\label{sec:setup}
 % ============================================================
-% TODO: To be completed after Phase 3.
 
 \subsection{Parameters/Hyperparameters}
-% TODO: To be completed after Phase 3.
 
 % ============================================================
 \section{Results}
+\label{sec:results}
 % ============================================================
-% TODO: To be completed after Phase 3--4.
 
 % ============================================================
 \section{Discussion}
+\label{sec:discussion}
 % ============================================================
-% TODO: To be completed after Phase 4 (requires misclassified examples).
 
 % ============================================================
 \section{Future Work}
 % ============================================================
-% TODO: To be completed last.
 
 % ============================================================
 \section*{Bibliography}
@@ -157,22 +128,22 @@ Dermatology              &  25 & 405 \\
 \bibliographystyle{apalike}
 \bibliography{biblio}
 
-% One page at most. Only the first two pages of the paper will be read. The appendix should only contain complementary information.
-
 \appendix
 
 \section*{Appendix A: Extra Figures and Tables}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\linewidth]{figures/fig2_text_lengths.png}
-\caption{Average word count per field (description vs.\ transcription) across all 12 specialties.}
-\label{fig:text_lengths}
+\includegraphics[width=\linewidth]{figures/fig1_class_distribution.png}
+\caption{Class distribution of the training data (2{,}669 records).}
+\label{fig:class_dist}
 \end{figure}
 
-
-
-
-
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2_text_lengths.png}
+\caption{Average word count of the description and transcription fields per specialty.}
+\label{fig:text_lengths}
+\end{figure}
 
 \end{document}

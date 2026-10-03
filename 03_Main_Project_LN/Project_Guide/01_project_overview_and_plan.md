@@ -42,7 +42,7 @@ Each entry in the dataset has 5 fields (semicolon-separated CSV):
 > [!WARNING]
 > The dataset is **highly imbalanced**: Surgery alone is 33.5% while Dermatology is only 1%. This is a key challenge you must address and discuss.
 
-**Test set:** 408 samples with **no labels**. Your best model must generate predictions for all 408 lines into `results.txt` (one label per line, no header).
+**Test set:** 409 records with **no labels** and **no header row** (pandas' default header handling silently consumes the first record and reports 408 — see Section 9.3). Your best model must generate predictions for all 409 records into `results.txt` (one label per line, no header).
 
 ---
 
@@ -87,11 +87,10 @@ Run your best model on `test_no_labels.csv` and produce `results.txt`.
 | **Discussion** | 3.0 | >= 3 concrete misclassified examples (text excerpt + predicted + correct + interpretation). Results must align with research question. Generic = **zero**. |
 | **Future Work** | 0.5 | What you would do with more time, tied to research question |
 | **References** | 1.0 | All papers, models, libraries, + **LLM usage declared explicitly** |
-| **General Paper Quality** | 1.5 | Sound methods, zero typos, illustrative figures, clearness |
-| **Replicability** | 1.5 | Can results be reproduced from the paper alone? |
-| **Creativity** | 2.0 | Did you go beyond cookbook code? |
+**Paper total: 16 points** — the nine rows above sum to exactly 16. Together with the 4 points of the automatic evaluation (Section 2.1), the project total is **20 points**.
 
-**Total: 20 points**
+> [!NOTE]
+> `template.tex` also contains a leftover list titled "How the project will be evaluated" placed *after* `\end{document}` (lines 84-89), so it is not rendered in `template.pdf`: General quality of the paper (1.5: sound methods, clearness, zero typos, illustrative examples, pictures and figures), Replicability (1.5), Creativity (2.0), References (1.0). These are **not extra points** on top of the table (replicability 1.0 and creativity 2.0 are already inside the 4.0 of Models). Read them only as a hint of what the graders value.
 
 ### Critical Formatting Tips (from `template.tex`)
 
@@ -116,7 +115,7 @@ Run your best model on `test_no_labels.csv` and produce `results.txt`.
 Submit a **ZIP file** (NOT RAR) named `NUM.zip` containing:
 1. `NUM.pdf` - the short paper
 2. Project code (not trained model weights, just the scripts) + any extra datasets gathered
-3. `results.txt` - 408 lines, one predicted label per line, no header, same order as `test_no_labels.csv`
+3. `results.txt` - 409 lines, one predicted label per line, no header, same order as `test_no_labels.csv`
 
 > [!IMPORTANT]
 > You must be able to re-run your code and reproduce results. If you cannot replicate your own results, you get **0 on the automatic component**.
@@ -201,7 +200,7 @@ Suggested model progression:
 - [ ] `test_no_labels.csv` is **ONLY** for generating `results.txt` - never train on it
 - [ ] Choose and report evaluation metrics: Accuracy, macro-F1, per-class F1
 - [ ] Document ALL hyperparameters with brief explanations of each
-- [ ] Run best model on `test_no_labels.csv` and generate `results.txt` (408 lines, no header)
+- [ ] Run best model on `test_no_labels.csv` and generate `results.txt` (409 lines, no header)
 
 ---
 
@@ -260,7 +259,7 @@ Suggested model progression:
 - [ ] File named `NUM.zip` (not RAR)
 - [ ] Contains `NUM.pdf`
 - [ ] Contains all runnable code (no model weights)
-- [ ] Contains `results.txt` with 408 lines, one label per line, no header
+- [ ] Contains `results.txt` with 409 lines, one label per line, no header
 - [ ] Line order in `results.txt` matches line order in `test_no_labels.csv`
 - [ ] Submitted via Fenix by **October 16, 2026 at 23:59**
 
@@ -291,3 +290,77 @@ All 4 review paper together before submission.
 8. **Data augmentation is mandatory** - missing it costs 2 pts directly.
 9. **Know your fields**: `description` is short and clean (great for fast experiments); `transcription` is very long and rich (best signal, but slower); `keywords` is a compact discriminative signal. Think about which combinations to use.
 10. **Class imbalance is the central challenge**: Surgery=33.5%, Dermatology=1%. Per-class F1 below 25% costs 2 pts in automatic evaluation. Your augmentation and loss function must account for this.
+
+---
+
+## 9. Source Details Verified Against the PDF, Template and CSVs (added 2026-10-03)
+
+> This section is the result of checking this guide line by line against `Project-2026-Description.pdf`, `template.tex` / `template.pdf` and the two CSV files. It records what Sections 1-8 omit, so that the guide can be used without re-reading the sources. Text in quotation marks is verbatim from the sources.
+
+### 9.1 Rules and tips from the PDF that are not mentioned above
+
+- **Oral discussion (PDF §6):** "All projects may be subject to an oral discussion. If students are unable to demonstrate a clear understanding of the work they have submitted, the final grade may be adjusted to reflect the demonstrated level of knowledge." Every member must be able to explain every part of the code and of the paper.
+- **Limitations (PDF §1):** the paper must "highlight limitations associated with the given data and your system" — both kinds of limitation, explicitly.
+- **Look at data and outputs (PDF §1, §7):** "You should convince us that you have looked at the data and at the returned outputs (not just at the evaluation scores)." and "Look at the input and output!!! (not just to numbers)".
+- **Label disagreements (PDF §7):** "The dataset is adapted from a 'real' dataset from Kaggle. Datasets in NL have errors and are usually imbalanced. You will also probably find many labels that you don't agree with. You are probably right, but the datasets will not be changed. Discuss these situations in your paper." Questionable labels are expected and must be discussed in the paper.
+- **Stop words (PDF §7):** "Attention to blindly removing stop words." Stop-word removal has to be a justified choice, not a default.
+- **Pre-processing parity (PDF §7):** "Pre-processing applied to the training set should also be applied to the test set."
+- **Systematic work (PDF §7):** "Remember what you have learned during the class about data and evaluation: try to do a systematic work."
+- **MSc-level problem (PDF §7):** "there is a clearly identified problem that you need to solve in the best possible way, but we do not tell you how to do it."
+- **No perfect score (PDF §7):** "There is no 100% accuracy (this is a research problem)."
+- **Zip contents (PDF §5):** "the project code (not the models, just the code) and eventual datasets gathered to the project" — any extra or augmented dataset that the code needs belongs in the zip.
+- **Group size (PDF §6):** "groups up to 4 students".
+- **Questions (PDF §6):** `meic-ln@disciplinas.tecnico.ulisboa.pt`, subject "Project".
+- **FAQs (PDF §6):** "We might release FAQs about the project – again, Fenix (Section Projects)." Check Fenix before submitting.
+
+### 9.2 Template details that are not mentioned above
+
+- **Page format:** `\documentclass[twocolumn,10pt]{article}` with packages `authblk`, `bera` and `inputenc` (utf8). Bibliography via `\bibliographystyle{apalike}` and `\bibliography{biblio}`.
+- **Exact section skeleton:** 1 Introduction; 2 Data (2.1 Data Analysis, 2.2 Data Augmentation); 3 Models; 4 Experimental Setup (4.1 Parameters/Hyperparameters); 5 Results; 6 Discussion; 7 Future Work; Bibliography; Appendix A: Extra Figures and Tables. The template has **no abstract**.
+- **Appendix:** "Maximum one page (it does not count for the 3 pages limit): just extra figures and tables. Notice that we should be able to understand the 3 pages paper without these figures and tables."
+- **"Your own test set":** the Experimental Setup rubric asks for "splits (which result in your own test set(s))" and the Discussion examples must come "from your own test set". These guides call that held-out part of `train.csv` the "validation set"; the template's term is "own test set".
+- **Discussion** also asks to "Try to explain the most common errors".
+- **Results** asks for "the results of your best models" (plural), "results by label of your best model" and "a comprehensive confusion matrix of one of your models (not necessarily the best one)".
+- **Tips missing from Section 3:** "If you say things such as 'The dataset is unbalanced', explain why (facts)." and, for acronyms, "use it consistently (check how to do it in latex)".
+- **Leftovers in `template.tex` that conflict with the PDF** (the PDF prevails): the comment on line 45 says "Only the first two pages of the paper will be read" (the PDF says three); the Results rubric calls the test file `test_no_labels.txt` (the file is `.csv`); the list after `\end{document}` is covered by the note under the table in Section 3.
+
+### 9.3 Facts about the given CSV files (verified by parsing them)
+
+Both files use `;` as separator, `"` as quote character, CRLF line endings and UTF-8. The five field names match the MTSamples "Medical Transcriptions" dataset on Kaggle (an inference: the PDF only says "a 'real' dataset from Kaggle").
+
+**`train.csv`** — has a header row.
+
+| Count | Meaning |
+|---|---|
+| 2,673 | physical lines (1 header + 2,672) |
+| 2,616 | rows returned by `pd.read_csv(sep=';', quotechar='"')` |
+| 2,613 | rows carrying one of the 12 valid labels (the number used throughout these guides; class counts as in the table of Section 1) |
+| 7 | of those 2,613 are corrupted: the `description` cell swallowed the records that followed it (0-based pandas rows 159, 710, 931, 1058, 2051, 2280, 2337) |
+| 3 | rows whose label is a fragment of text: the cut-off tails of rows 931, 2051 and 2280 (rows 932, 2052, 2281) |
+| 2,606 | fully clean rows |
+
+- The 7 corrupted cells hold 56 swallowed lines, every one starting with a valid label; 49 of them are complete 5-field records. Three of the cells are cut at exactly 32,759 characters.
+- In the 2,606 clean rows `transcription` is empty in 24 and `keywords` is empty in 396.
+- **How the code handles this:** `26/code/data_utils.py` (`load_train()`) leaves the given file untouched and repairs these rows in memory, splitting each corrupted cell back into its records and rejoining the three cut ones. The result is **2,669 records** (the 2,606 clean rows, the 7 corrupted rows reduced to their own description, and 56 recovered records), which is the dataset size used by the scripts and the paper. On those 2,669 records the first keyword equals the label in all 2,219 rows that have keywords, and 731 transcriptions appear under more than one label (1,530 rows).
+
+**`test_no_labels.csv`** — has **no header row** (its first line is already a record) and 4 columns.
+
+| Count | Meaning |
+|---|---|
+| 452 | physical lines |
+| 409 | records returned by `pd.read_csv(sep=';', quotechar='"', header=None)` |
+| 408 | what pandas returns with its default `header=0`, because the first record is consumed as column names |
+
+- 4 records are corrupted in the same way as in train (0-based rows 17, 241, 324, 357, i.e. `results.txt` lines 18, 242, 325, 358). Their `description` swallowed 43 lines in total, **each still starting with its label**. The test file must never be used for training (PDF §3), which includes these embedded labelled lines.
+- The record after each corrupted one (lines 19, 243, 326, 359) is its cut-off tail: a keyword list sitting in the `description` column with the other fields empty. Line 80 is an empty record (`;;;`).
+- Empty fields over the 409 records: `description` 1, `sample_name` 9, `transcription` 11, `keywords` 83.
+
+> [!CAUTION]
+> **`results.txt` must be aligned with 409 records, not 408.** Every "408" in earlier versions of these guides came from reading the file with the default header, which drops the first record and shifts every prediction by one line. Because of the 4 corrupted records, "line number" is also ambiguous (409 parsed records versus 452 physical lines). 409 is the count a CSV parser gives; since the 4 automatic points depend on this alignment, it is worth confirming with the professors (contact in Section 9.1).
+
+**Patterns in the 2,606 clean train rows**
+
+- The same clinical note is listed under several specialties: there are 1,815 distinct transcriptions for 2,582 non-empty ones, and 701 of them appear with more than one label (1,467 rows). Most frequent label pairs for an identical transcription: Orthopedic/Surgery 145, Cardiovascular-Pulmonary/Surgery 114, Gastroenterology/Surgery 97, Obstetrics-Gynecology/Surgery 67, Neurology/Radiology 57, Neurosurgery/Surgery 55.
+- Share of each class whose transcription also exists under another label: Neurosurgery 91%, Radiology 72%, Orthopedic 70%, Obstetrics-Gynecology 64%, Surgery 59%, Gastroenterology 59%, Cardiovascular-Pulmonary 56%, Ophthalmology 55%, Neurology 52%, Dermatology 48%, Psychiatry-Psychology 18%, General Medicine 7%.
+- In 2,171 of the 2,210 rows with non-empty `keywords` (98.2%) the first keyword is the specialty label itself (for example `cardiovascular / pulmonary, ...`).
+- 237 of the 398 non-empty test transcriptions also occur verbatim in `train.csv`.

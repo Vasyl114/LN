@@ -4,7 +4,7 @@
 
 The professors handed us a folder with a spreadsheet of 2,613 clinical records. Each record is a real medical note — the kind a doctor would write after seeing a patient. The records belong to 12 different medical departments (Surgery, Radiology, Neurology, etc.) and each one is already labelled with the correct department.
 
-They also gave us 408 unlabelled records and said: *"Use the 2,613 labelled ones to teach a computer how to read a clinical note and figure out which department it belongs to. Then use what you built to predict the department for these 408 records and give us the answers."*
+They also gave us 409 unlabelled records and said: *"Use the 2,613 labelled ones to teach a computer how to read a clinical note and figure out which department it belongs to. Then use what you built to predict the department for these 409 records and give us the answers."*
 
 ---
 
@@ -36,7 +36,7 @@ This is interesting because the answer is not obvious. More information is not a
 
 **Fourth**, we compare the results. The classical model has more information. The smart model has better understanding. Whichever wins answers our research question.
 
-**Finally**, we take the winning model, run it on the 408 unlabelled records, and produce a file with 408 predicted department names. That file goes to the professors.
+**Finally**, we take the winning model, run it on the 409 unlabelled records, and produce a file with 409 predicted department names. That file goes to the professors.
 
 ---
 
@@ -44,7 +44,7 @@ This is interesting because the answer is not obvious. More information is not a
 
 A ZIP file containing three things:
 - A 3-page scientific paper (PDF) telling this exact story with numbers and analysis
-- The file with the 408 predictions
+- The file with the 409 predictions
 - All the code we wrote
 
 ---

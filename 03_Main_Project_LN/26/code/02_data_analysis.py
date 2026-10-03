@@ -7,8 +7,10 @@ PURPOSE:
     This script analyses the training dataset and produces:
       - A class distribution table (printed and saved as a figure)
       - A text length analysis per class (printed and saved as a figure)
-      - A top-words analysis for 3 selected classes
+      - A top-words analysis for 4 selected classes
       - A count of noisy/incomplete rows
+      - The numbers behind the two observations reported in the paper
+        (notes listed under several specialties, label inside the keywords)
 
     All numbers printed here are the raw material for the
     "Data Analysis" subsection of the paper (26.tex).
@@ -23,16 +25,18 @@ OUTPUT FILES:
 """
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')  # Run without a display (for servers/terminals)
+import matplotlib.pyplot as plt
+from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import os
+
+from data_utils import load_train
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-DATA_PATH    = '../../StudentsPack/train.csv'
 FIGURES_DIR  = '../figures'
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
@@ -44,18 +48,11 @@ print("=" * 60)
 print("STEP 1: Loading data")
 print("=" * 60)
 
-df = pd.read_csv(DATA_PATH, sep=';', quotechar='"', engine='python')
+# The shared loader repairs the rows whose description cell absorbed the
+# records that followed it (see data_utils.py). The given file is not modified.
+df = load_train(verbose=True)
 
-# Apply the same cleaning as the baseline model:
-# Remove rows where the label is very long (parsing errors)
-df = df[df['medical_specialty'].str.len() < 50]
-
-# Remove classes that have only 1 sample
-counts_raw = df['medical_specialty'].value_counts()
-valid_classes = counts_raw[counts_raw > 1].index
-df = df[df['medical_specialty'].isin(valid_classes)]
-
-print(f"  Total rows after cleaning : {len(df)}")
+print(f"\n  Total rows after cleaning : {len(df)}")
 print(f"  Number of classes         : {df['medical_specialty'].nunique()}")
 print(f"  Columns                   : {list(df.columns)}\n")
 
@@ -118,14 +115,21 @@ def word_count(text):
 df['desc_wc']  = df['description'].apply(word_count)
 df['trans_wc'] = df['transcription'].apply(word_count)
 
-# Group by class and compute mean
-length_table = df.groupby('medical_specialty')[['desc_wc', 'trans_wc']].mean().round(1)
-length_table.columns = ['Avg Words (description)', 'Avg Words (transcription)']
+# Group by class and compute mean.
+# Empty transcriptions are left out of the transcription average
+# (counting them as 0 words would pull the average down).
+has_trans = df['transcription'].notna()
+length_table = pd.DataFrame({
+    'Avg Words (description)'  : df.groupby('medical_specialty')['desc_wc'].mean(),
+    'Avg Words (transcription)': df[has_trans].groupby('medical_specialty')['trans_wc'].mean(),
+}).round(1)
 length_table = length_table.sort_values('Avg Words (transcription)', ascending=False)
 
 print(length_table.to_string())
-print(f"\nOverall avg description length  : {df['desc_wc'].mean():.1f} words")
-print(f"Overall avg transcription length: {df['trans_wc'].mean():.1f} words\n")
+print(f"\nOverall avg description length  : {df['desc_wc'].mean():.1f} words "
+      f"(median {df['desc_wc'].median():.0f}, max {df['desc_wc'].max()})")
+print(f"Overall avg transcription length: {df.loc[has_trans, 'trans_wc'].mean():.1f} words "
+      f"(median {df.loc[has_trans, 'trans_wc'].median():.0f}, non-empty rows only)\n")
 
 # ── Figure 2: Grouped bar chart of text lengths ──
 fig, ax = plt.subplots(figsize=(12, 5))
@@ -192,15 +196,85 @@ print("=" * 60)
 print("STEP 5: Noisy and incomplete rows")
 print("=" * 60)
 
-# Rows with empty transcription
-empty_trans = df['transcription'].isna().sum() + (df['transcription'] == '').sum()
+# Rows with empty transcription / keywords (the loader turns blank cells into NaN)
+empty_trans = df['transcription'].isna().sum()
+empty_kw    = df['keywords'].isna().sum()
 
 # Rows with very short description (under 5 words)
 short_desc = (df['desc_wc'] < 5).sum()
 
 print(f"  Rows with empty/missing transcription : {empty_trans}")
+print(f"  Rows with empty/missing keywords      : {empty_kw} ({empty_kw / len(df) * 100:.1f}%)")
 print(f"  Rows with description under 5 words  : {short_desc}")
-print(f"  Total rows potentially noisy         : {empty_trans + short_desc}")
+print()
+
+
+# ─────────────────────────────────────────────────────────────
+# STEP 6: THE SAME NOTE LISTED UNDER SEVERAL SPECIALTIES
+# (Observation 1 in the paper)
+# ─────────────────────────────────────────────────────────────
+print("=" * 60)
+print("STEP 6: Notes listed under more than one specialty")
+print("=" * 60)
+
+with_trans = df[has_trans]
+per_note   = with_trans.groupby('transcription')['medical_specialty'].agg(['nunique', 'count'])
+multi_note = per_note[per_note['nunique'] > 1]
+in_multi   = with_trans['transcription'].isin(multi_note.index)
+
+print(f"  Rows with a transcription             : {len(with_trans)}")
+print(f"  Distinct transcriptions               : {len(per_note)}")
+print(f"  Transcriptions under >1 specialty     : {len(multi_note)}")
+print(f"  Rows involved                         : {in_multi.sum()} "
+      f"({in_multi.sum() / len(with_trans) * 100:.1f}% of rows with a transcription)")
+
+# Do the copies of a note differ in the other fields?
+copies = with_trans[in_multi].groupby('transcription')
+same_desc = sum(g['description'].nunique(dropna=False) == 1 for _, g in copies)
+same_name = sum(g['sample_name'].nunique(dropna=False) == 1 for _, g in copies)
+print(f"  ...with identical description         : {same_desc} of {len(multi_note)}")
+print(f"  ...with identical sample_name         : {same_name} of {len(multi_note)}")
+
+# Which pairs of specialties share the most notes
+pair_counts = Counter()
+for _, g in copies:
+    labels = sorted(g['medical_specialty'].unique())
+    for a in range(len(labels)):
+        for b in range(a + 1, len(labels)):
+            pair_counts[(labels[a], labels[b])] += 1
+print("\n  Most frequent pairs (same transcription, different label):")
+for (a, b), n in pair_counts.most_common(6):
+    print(f"    {n:>4}  {a} / {b}")
+
+# Share of each class whose note also exists under another label
+print("\n  Share of each class also listed under another specialty:")
+share = (with_trans.assign(shared=in_multi)
+         .groupby('medical_specialty')['shared'].agg(['sum', 'count']))
+share['pct'] = (share['sum'] / share['count'] * 100).round(0)
+for cls, r in share.sort_values('pct', ascending=False).iterrows():
+    print(f"    {cls:<26} {int(r['sum']):>4} of {int(r['count']):>4}  ({r['pct']:.0f}%)")
+print()
+
+
+# ─────────────────────────────────────────────────────────────
+# STEP 7: THE LABEL INSIDE THE KEYWORDS FIELD
+# (Observation 2 in the paper)
+# ─────────────────────────────────────────────────────────────
+print("=" * 60)
+print("STEP 7: First keyword vs. label")
+print("=" * 60)
+
+with_kw  = df[df['keywords'].notna()]
+first_kw = with_kw['keywords'].str.split(',').str[0].str.strip().str.lower()
+# The keywords write the specialty as e.g. "cardiovascular / pulmonary"
+label_as_kw = with_kw['medical_specialty'].str.lower().str.replace('-', ' / ')
+n_match = (first_kw == label_as_kw).sum()
+
+print(f"  Rows with keywords                    : {len(with_kw)}")
+print(f"  First keyword equals the label        : {n_match} ({n_match / len(with_kw) * 100:.1f}%)")
+print(f"  Rows without keywords                 : {empty_kw} ({empty_kw / len(df) * 100:.1f}%)")
+example = with_kw.iloc[0]
+print(f"  Example: [{example['medical_specialty']}] {example['keywords'][:70]}...")
 print()
 
 print("=" * 60)

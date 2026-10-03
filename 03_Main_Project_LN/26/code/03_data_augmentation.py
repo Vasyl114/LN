@@ -4,19 +4,18 @@
 Phase 2 — Data Augmentation for Group 26 NLP Project.
 
 WHAT THIS DOES:
-    1. Loads and cleans the original training data
+    1. Loads the original training data (repaired in memory by data_utils.py)
     2. Creates a held-out development set (from original data only)
-    3. Evaluates a baseline model on that dev set BEFORE augmentation
-    4. Generates augmented records for the 4 minority classes using 15 techniques
-       (beneficial + creative + intentional noise)
-    5. Evaluates the same model on the same dev set AFTER clean augmentation
-    6. Evaluates again with noisy augmentation (for comparison)
-    7. Prints a full summary table
-    8. Saves two output files
+    3. Evaluates a reference model on that dev set BEFORE augmentation
+    4. Generates augmented records for every class below TARGET_COUNT,
+       using 15 text transformation variants. Records are generated only
+       from the training portion, never from the development set.
+    5. Evaluates the same model on the same dev set AFTER augmentation
+    6. Prints a summary and the class distribution before and after
+    7. Saves the output file
 
-OUTPUT FILES (saved to the same folder as this script):
-    train_augmented.csv              -- original + clean augmented records
-    train_augmented_with_noise.csv   -- original + all augmented (including noise)
+OUTPUT FILE (saved to the same folder as this script):
+    train_augmented.csv   -- all original records + the augmented records
 
 HOW TO RUN:
     From the 26/code/ directory:
@@ -35,6 +34,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
+from data_utils import load_train
+
 # Download required NLTK data (only runs once)
 nltk.download('wordnet', quiet=True)
 nltk.download('omw-1.4', quiet=True)
@@ -44,9 +45,9 @@ nltk.download('punkt_tab', quiet=True)
 # ─────────────────────────────────────────────────────────────
 # CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-DATA_PATH   = '../../StudentsPack/train.csv'
 RANDOM_SEED = 42
 TARGET_COUNT = 400   # Target samples per minority class after augmentation
+MAX_CYCLES   = 100   # Stop guard: maximum passes over the records of one class
 
 # ─────────────────────────────────────────────────────────────
 # MEDICAL SYNONYM MAP
@@ -92,20 +93,28 @@ FILLER_WORDS = {
     'certainly', 'clearly', 'obviously', 'indeed', 'actually',
 }
 
-# Medical abbreviation expansions
+# Medical abbreviation expansions.
+# Only unambiguous abbreviations are listed. 'cc' (also cubic centimetres),
+# 'pt' (also prothrombin time / physical therapy), 'tid' (also the TID ratio)
+# and 'rx' (also part of device names) were left out because in this dataset
+# they mostly do NOT mean chief complaint / patient / three times daily / prescription.
 ABBREVIATIONS = {
-    r'\bpt\b':    'patient',
-    r'\bpts\b':   'patients',
     r'\bdx\b':    'diagnosis',
     r'\bhx\b':    'history',
-    r'\brx\b':    'prescription',
-    r'\bcc\b':    'chief complaint',
     r'\bsx\b':    'symptoms',
     r'\bwnl\b':   'within normal limits',
     r'\bprn\b':   'as needed',
     r'\bbid\b':   'twice daily',
-    r'\btid\b':   'three times daily',
     r'\bpo\b':    'by mouth',
+}
+
+# Words that change the clinical meaning if replaced or removed:
+# laterality, anatomical position, negation and sex.
+PROTECTED_WORDS = {
+    'right', 'left', 'bilateral', 'unilateral', 'upper', 'lower',
+    'anterior', 'posterior', 'lateral', 'medial', 'proximal', 'distal',
+    'superior', 'inferior', 'no', 'not', 'none', 'without', 'never',
+    'negative', 'positive', 'male', 'female',
 }
 
 # Small numbers → words
@@ -122,8 +131,11 @@ def is_protected(word):
     """
     Returns True if a word should never be modified.
     Protects: ALL-CAPS abbreviations, numeric tokens, dosages,
-    spinal levels (C3-C4), and hyphenated compound terms.
+    spinal levels (C3-C4), hyphenated compound terms, and the words
+    in PROTECTED_WORDS (laterality, position, negation, sex).
     """
+    if word.lower().strip('.,;:()') in PROTECTED_WORDS:
+        return True
     if word.isupper() and len(word) > 1:
         return True
     if re.match(r'^[\d.,/%]+$', word):
@@ -174,19 +186,23 @@ def synonym_replace(text, ratio=0.10, seed=42):
         words[idx] = replacement
         changed.add(idx)
 
-    # Fill remaining quota with WordNet synonyms
+    # Fill remaining quota with WordNet synonyms.
+    # Only the most common sense of a word is used (first synset), and only
+    # words in their base form are replaced, so inflection is never broken.
     remaining = n_replace - len(changed)
     if remaining > 0 and wn_candidates:
         for idx in rng.sample(wn_candidates, min(remaining, len(wn_candidates))):
-            synsets = wordnet.synsets(words[idx].lower())
+            word = words[idx].lower()
+            synsets = wordnet.synsets(word)
+            if not synsets or wordnet.morphy(word) != word:
+                continue
             candidates = []
-            for syn in synsets:
-                for lemma in syn.lemmas():
-                    name = lemma.name().replace('_', ' ')
-                    if name.lower() != words[idx].lower() and name.isalpha():
-                        candidates.append(name)
+            for lemma in synsets[0].lemmas():
+                name = lemma.name().replace('_', ' ')
+                if name.lower() != word and name.isalpha():
+                    candidates.append(name)
             if candidates:
-                replacement = rng.choice(candidates[:5])
+                replacement = rng.choice(candidates)
                 if words[idx][0].isupper():
                     replacement = replacement.capitalize()
                 words[idx] = replacement
@@ -266,11 +282,14 @@ def number_variation(text):
     """
     Replace standalone small numbers with their word equivalents.
     E.g.: "3 lesions" → "three lesions"
+    A number is only replaced when it stands alone between spaces, so
+    decimals (0.5), ranges (4-5), spinal levels (C5-6) and sizes (#10-blade)
+    are left untouched.
     """
     if not isinstance(text, str):
         return text
     for num, word in NUMBER_TO_WORD.items():
-        text = re.sub(r'\b' + re.escape(num) + r'\b', word, text)
+        text = re.sub(r'(?<!\S)' + re.escape(num) + r'(?!\S)', word, text)
     return text
 
 
@@ -306,23 +325,6 @@ def keyword_subset(keywords, keep_ratio=0.75, seed=42):
     kept = rng.sample(kw_list, n_keep)
     rng.shuffle(kept)
     return ', '.join(kept)
-
-
-def heavy_noise(text, seed=42):
-    """
-    Intentional heavy noise for the noise experiment:
-    - 20% word deletion
-    - 3 random word swaps
-    - Lowercase entire text
-    This deliberately degrades the text to test model robustness.
-    NOT used in the clean augmented dataset.
-    """
-    if not isinstance(text, str) or len(text.strip()) < 5:
-        return text
-    text = random_deletion(text, ratio=0.20, seed=seed)
-    text = random_swap(text, n=3, seed=seed + 1)
-    text = text.lower()
-    return text
 
 
 # ─────────────────────────────────────────────────────────────
@@ -427,11 +429,6 @@ def get_clean_variants(seed_base=RANDOM_SEED):
          'desc_fn':  lambda t: random_swap(compress_text(t), n=1, seed=s+21),
          'trans_fn': lambda t: random_deletion(compress_text(t), ratio=0.10, seed=s+22),
          'kw_fn':    lambda k: keyword_subset(k, keep_ratio=0.75, seed=s)},
-        # ── Noise variant (intentional) ──
-        {'name': 'noise_heavy',
-         'desc_fn':  lambda t: heavy_noise(t, seed=s+99),
-         'trans_fn': lambda t: heavy_noise(t, seed=s+100),
-         'kw_fn':    lambda k: case_lower(k)},
     ]
 
 
@@ -441,7 +438,14 @@ def get_clean_variants(seed_base=RANDOM_SEED):
 def augment_class(df, class_name, target_count):
     """
     Generate new records for class_name until target_count is reached.
-    Cycles through all variants (including noise).
+
+    The variant rotates per record: in pass c, record r receives variant
+    (r + c) mod 15. Every class therefore receives a mix of variants, and a
+    record never receives the same variant twice until all 15 were used on it.
+    After that the random seed changes, so the stochastic variants give new text.
+
+    A generated record is discarded when it is identical (description and
+    transcription) to an original record or to one already generated.
     If the class is already at or above target_count, returns empty DataFrame.
     """
     class_df = df[df['medical_specialty'] == class_name].copy().reset_index(drop=True)
@@ -452,38 +456,60 @@ def augment_class(df, class_name, target_count):
         print(f"  [{class_name}] Already at {n_original} records. Skipping.")
         return pd.DataFrame()
 
-    print(f"  [{class_name}] {n_original} → {target_count} | Generating {n_needed} new records...")
+    n_variants = len(get_clean_variants())
 
-    variants = get_clean_variants()
+    # Texts that already exist: a generated record must differ from all of them
+    seen = set(zip(class_df['description'].astype(str),
+                   class_df['transcription'].astype(str)))
 
     augmented_rows = []
-    row_index = 0
-    variant_index = 0
+    variants_used = set()
+    cycle = 0
 
-    while len(augmented_rows) < n_needed:
-        row = class_df.iloc[row_index % n_original]
-        v = variants[variant_index % len(variants)]
-        try:
-            kw_val = row.get('keywords')
-            kw_val_str = '' if pd.isna(kw_val) else str(kw_val)
-            new_row = {
-                'medical_specialty': row['medical_specialty'],
-                'description':       v['desc_fn'](str(row.get('description', ''))),
-                'sample_name':       row.get('sample_name', ''),
-                'transcription':     v['trans_fn'](str(row.get('transcription', ''))),
-                'keywords':          v['kw_fn'](kw_val_str) if kw_val_str else np.nan,
-            }
+    while len(augmented_rows) < n_needed and cycle < MAX_CYCLES:
+        variants = get_clean_variants(seed_base=RANDOM_SEED + 1000 * (cycle // n_variants))
+
+        for r in range(n_original):
+            if len(augmented_rows) >= n_needed:
+                break
+            row = class_df.iloc[r]
+            v = variants[(r + cycle) % n_variants]
+
+            desc, trans, kw = row['description'], row['transcription'], row['keywords']
+            if not isinstance(desc, str):
+                continue
+
+            # Empty fields stay empty
+            new_desc  = v['desc_fn'](desc)
+            new_trans = v['trans_fn'](trans) if isinstance(trans, str) else np.nan
+            new_kw    = v['kw_fn'](kw) if isinstance(kw, str) else np.nan
+
             # Skip if the description became empty or too short
-            if len(str(new_row['description']).split()) >= 3:
-                augmented_rows.append(new_row)
-        except Exception:
-            pass  # Silently skip any row that errors
+            if len(new_desc.split()) < 3:
+                continue
 
-        row_index += 1
-        if row_index % n_original == 0:
-            variant_index += 1  # Move to next variant after cycling all original rows
+            # Skip if the variant changed nothing, or repeats an earlier record
+            key = (new_desc, str(new_trans))
+            if key in seen:
+                continue
+            seen.add(key)
 
-    return pd.DataFrame(augmented_rows[:n_needed])
+            augmented_rows.append({
+                'medical_specialty': row['medical_specialty'],
+                'description':       new_desc,
+                'sample_name':       row['sample_name'],
+                'transcription':     new_trans,
+                'keywords':          new_kw,
+            })
+            variants_used.add(v['name'])
+
+        cycle += 1
+
+    print(f"  [{class_name}] {n_original} → {n_original + len(augmented_rows)} | "
+          f"Generated {len(augmented_rows)} new records "
+          f"({len(variants_used)} variants used)")
+
+    return pd.DataFrame(augmented_rows)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -536,18 +562,8 @@ def main():
     print("PHASE 2 — DATA AUGMENTATION")
     print("=" * 60)
 
-    # ── Load and clean ──
-    df = pd.read_csv(DATA_PATH, sep=';', quotechar='"', engine='python')
-    df = df[df['medical_specialty'].str.len() < 50]
-
-    # Remove Neurosurgery rows where description leaked transcription content
-    mask = ~((df['medical_specialty'] == 'Neurosurgery') &
-             (df['description'].fillna('').apply(lambda x: len(str(x).split())) > 200))
-    df = df[mask].copy()
-
-    # Remove classes with only 1 sample (can't stratify)
-    counts = df['medical_specialty'].value_counts()
-    df = df[df['medical_specialty'].isin(counts[counts > 1].index)].copy()
+    # ── Load (the shared loader repairs the broken rows in memory) ──
+    df = load_train()
     print(f"\nTotal records after cleaning : {len(df)}")
     print(f"Number of classes            : {df['medical_specialty'].nunique()}")
 
@@ -603,17 +619,20 @@ def main():
     print("\n" + "=" * 60)
     print("CLASS DISTRIBUTION — BEFORE vs AFTER")
     print("=" * 60)
-    before = train_orig['medical_specialty'].value_counts()
-
     # The final file combines ALL original data (not just 80%) + augmented
     full_aug = pd.concat([df, aug_df], ignore_index=True)
 
-    after = full_aug['medical_specialty'].value_counts()
-    for cls in after.sort_values(ascending=False).index:
+    # "Before" and "after" both count the whole dataset, so they are comparable
+    before = df['medical_specialty'].value_counts()
+    after  = full_aug['medical_specialty'].value_counts()
+    print(f"  {'Specialty':<30} {'orig':>5}   {'file':>5}   (train portion: orig → augmented)")
+    for cls in before.index:
         b = before.get(cls, 0)
         a = after.get(cls, 0)
-        bar = '█' * min(30, a // 20)
-        print(f"  {cls:<30} {b:>4} → {a:>4}  {bar}")
+        tr_b = (train_orig['medical_specialty'] == cls).sum()
+        tr_a = (train_aug['medical_specialty'] == cls).sum()
+        print(f"  {cls:<30} {b:>5} → {a:>5}   ({tr_b:>3} → {tr_a:>3})")
+    print(f"  {'Total':<30} {len(df):>5} → {len(full_aug):>5}   ({len(train_orig)} → {len(train_aug)})")
 
     # ── Save output files ──
     print("\n" + "=" * 60)
