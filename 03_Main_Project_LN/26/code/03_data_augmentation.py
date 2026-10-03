@@ -29,12 +29,11 @@ import re
 import os
 import nltk
 from nltk.corpus import wordnet
-from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-from data_utils import load_train
+from data_utils import load_train, split_train_heldout, RANDOM_SEED
 
 # Download required NLTK data (only runs once)
 nltk.download('wordnet', quiet=True)
@@ -45,7 +44,6 @@ nltk.download('punkt_tab', quiet=True)
 # ─────────────────────────────────────────────────────────────
 # CONFIGURATION
 # ─────────────────────────────────────────────────────────────
-RANDOM_SEED = 42
 TARGET_COUNT = 400   # Target samples per minority class after augmentation
 MAX_CYCLES   = 100   # Stop guard: maximum passes over the records of one class
 
@@ -568,10 +566,7 @@ def main():
     print(f"Number of classes            : {df['medical_specialty'].nunique()}")
 
     # ── Dev split (20% from original data only — never augmented) ──
-    train_orig, dev_df = train_test_split(
-        df, test_size=0.20, random_state=RANDOM_SEED,
-        stratify=df['medical_specialty']
-    )
+    train_orig, dev_df = split_train_heldout(df)
     print(f"Train (original)             : {len(train_orig)}")
     print(f"Dev (held out, never touched): {len(dev_df)}")
 

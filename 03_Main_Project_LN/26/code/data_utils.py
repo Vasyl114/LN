@@ -1,11 +1,11 @@
 """
 data_utils.py
 =============
-Shared data loading for Group 26 NLP Project.
+Shared data loading and splitting for Group 26 NLP Project.
 
 PURPOSE:
-    Every script must work on exactly the same records, so the loading and
-    cleaning of train.csv lives here and is imported by the other scripts.
+    Every script must work on exactly the same records and on exactly the
+    same split, so both live here and are imported by the other scripts.
 
     The file given by the professors is never modified. It contains 7 rows
     whose 'description' cell absorbed the records that followed it (an opening
@@ -16,16 +16,27 @@ PURPOSE:
       - every absorbed line becomes a record of its own again
       - a cut record is rejoined with its tail (one character is lost at the join)
 
+    THE SPLIT (split_train_heldout):
+      - the original records are divided once: 80% for training, 20% held out
+      - the division is stratified: every specialty keeps its proportion
+      - the random seed is fixed, so the split is identical in every script
+      - the held-out records are only used to measure a model, never to train
+        it and never as a source for data augmentation
+
 HOW TO USE:
-    from data_utils import load_train
+    from data_utils import load_train, split_train_heldout
     df = load_train()
+    train_df, heldout_df = split_train_heldout(df)
 """
 
 import csv
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-TRAIN_PATH = '../../StudentsPack/train.csv'
+TRAIN_PATH   = '../../StudentsPack/train.csv'
+RANDOM_SEED  = 42
+HELDOUT_SIZE = 0.20   # Share of the original records kept aside for evaluation
 
 COLUMNS = ['medical_specialty', 'description', 'sample_name',
            'transcription', 'keywords']
@@ -53,6 +64,8 @@ def load_train(path=TRAIN_PATH, verbose=False):
     """
     Load train.csv and return a clean DataFrame with one record per row.
     Rows are kept in file order. With verbose=True, prints what was repaired.
+    Any other file with the same five columns (e.g. train_augmented.csv)
+    can be loaded the same way; a file without broken rows is returned as is.
     """
     raw = pd.read_csv(path, sep=';', quotechar='"', engine='python')
     rows = raw.to_dict('records')
@@ -121,6 +134,28 @@ def load_train(path=TRAIN_PATH, verbose=False):
         print(f"  Records after repair              : {len(df)}")
 
     return df
+
+
+def split_train_heldout(df):
+    """
+    Split the original records into a training portion and a held-out portion.
+    Stratified by label, fixed seed. Returns (train_df, heldout_df).
+    """
+    return train_test_split(df, test_size=HELDOUT_SIZE, random_state=RANDOM_SEED,
+                            stratify=df['medical_specialty'])
+
+
+def remove_heldout(df, heldout_df):
+    """
+    Return df without the records of the held-out portion.
+    A record is removed when all five fields are equal to a held-out record.
+    Used to train on a file that contains the whole original data
+    (e.g. train_augmented.csv) without training on the evaluation records.
+    """
+    def as_key(d):
+        return d[COLUMNS].fillna('').astype(str).agg('\x1f'.join, axis=1)
+
+    return df[~as_key(df).isin(set(as_key(heldout_df)))]
 
 
 if __name__ == '__main__':
