@@ -34,6 +34,7 @@ In this work we ask: does a domain-specific language model, fine-tuned on short 
 \acrodef{mnb}{Multinomial Naive Bayes}
 \acrodef{lr}{Logistic Regression}
 \acrodef{svm}{Support Vector Machine}
+\acrodef{eda}{Easy Data Augmentation}
 
 
 % ============================================================
@@ -80,33 +81,46 @@ Figure~\ref{fig:class_dist} provides a visual representation of this distributio
 \label{fig:class_dist}
 \end{figure}
 
-\textbf{Observation 1 --- Field length varies substantially across specialties.} The \texttt{description} field is short and consistent across all classes (overall mean: 28.4 words), making it suitable as input for models with strict token limits. The \texttt{transcription} field is significantly longer (overall mean: 452.2 words) and exhibits high inter-class variance: Radiology notes average 275.8 words, whereas Psychiatry-Psychology notes average 823.7 words. This disparity is directly relevant to the research question: a classical model trained on the full transcription will process up to three times more tokens for certain classes than for others, potentially introducing a length bias that favours verbose specialties.
+\textbf{Observation 1 --- Field length varies substantially across specialties.} The \texttt{description} field is short and consistent (mean: 28.4 words), making it suitable for models with strict token limits. The \texttt{transcription} field is significantly longer (mean: 452.2) with high variance: Radiology averages 275.8 words, whereas Psychiatry-Psychology averages 823.7. A classical model trained on the full transcription may introduce a length bias favouring verbose specialties.
 
-\textbf{Observation 2 --- Vocabulary overlap between related specialties introduces classification ambiguity.} Analysis of the most frequent terms in the \texttt{description} field reveals significant lexical overlap between Surgery and Neurosurgery (shared top terms: \emph{right}, \emph{left}, \emph{anterior}, \emph{bilateral}, \emph{patient}), suggesting that word-frequency models may struggle to separate these two classes without attending to specialty-specific terms such as \emph{discectomy}, \emph{cervical}, or \emph{fusion}, which are present in Neurosurgery but rare in general Surgery. In contrast, Radiology contains highly distinctive vocabulary (\emph{MRI}, \emph{contrast}, \emph{ultrasound}, \emph{spine}, \emph{brain}) with limited overlap with other specialties, which may explain why it is easier to identify despite having only 217 training samples. Additionally, 30 records contain empty transcription fields and 158 records contain descriptions of fewer than five words, representing potential sources of noise in models relying on these fields.
+\textbf{Observation 2 --- Vocabulary overlap introduces classification ambiguity.} Frequent terms in the \texttt{description} field reveal significant lexical overlap between Surgery and Neurosurgery (shared top terms: \emph{right}, \emph{left}, \emph{patient}), making separation difficult without specialty-specific terms (e.g., \emph{discectomy}). In contrast, Radiology contains highly distinctive vocabulary (\emph{MRI}, \emph{ultrasound}) making it easier to identify. Finally, 30 empty transcriptions and 158 short descriptions (under 5 words) were found, representing potential noise.
 
 \subsection{Data Augmentation}
 
-The class imbalance identified in Section~2.1 motivates an explicit data augmentation strategy. Without intervention, a classifier trained on the base dataset is incentivised to predict Surgery for all inputs, achieving trivially high accuracy on the majority class while producing near-zero recall on minority classes. To address this, we applied augmentation to the four most underrepresented classes: Dermatology (25 samples), Psychiatry-Psychology (40), Ophthalmology (71), and Neurosurgery (78), targeting 400 samples per class.
+The class imbalance identified in Section~2.1 motivates an explicit data augmentation strategy. An unbalanced and relatively small dataset is a poor training base: without intervention, a classifier defaults to predicting the majority class (Surgery), resulting in near-zero recall for underrepresented specialties. To build a more balanced training set, we applied programmatic data augmentation to all 11 minority classes that had fewer than 400 samples, generating numerous new records to reach a more uniform distribution.
 
-\textbf{Augmentation techniques.} We implemented 15 programmatic text transformation variants drawn from the \ac{eda} framework~\cite{wei2019eda}, extended with domain-specific adaptations. The variants span a spectrum from beneficial to intentionally noisy, as follows:
+\textbf{Augmentation techniques.} To ensure diversity without losing clinical meaning, we implemented 15 text transformation variants inspired by the \ac{eda} framework~\cite{wei2019eda}. These include beneficial techniques such as curated clinical synonym replacement (e.g., \emph{patient} $\rightarrow$ \emph{individual}), structural changes (e.g., sentence deletion, abbreviation expansion, and filler-word compression), and surface variations (e.g., case and punctuation changes). Additionally, intentional noise (random deletion and word swaps) was introduced as a controlled ablation. 
 
-\begin{itemize}
-    \item \textbf{Synonym replacement} (10\% and 20\% rates): non-protected words are replaced using a curated clinical synonym map (e.g., \emph{patient} $\rightarrow$ \emph{individual}, \emph{normal} $\rightarrow$ \emph{unremarkable}) and WordNet~\cite{nltk} for general vocabulary. Protected terms (all-caps abbreviations, numeric tokens, spinal level codes such as C3--C4, and hyphenated compound terms) are never modified.
-    \item \textbf{Random deletion} (10\% and 20\% rates): applied exclusively to the \texttt{transcription} field to protect the short \texttt{description} field used by language models.
-    \item \textbf{Compression}: filler words (\emph{very}, \emph{typically}, \emph{generally}, etc.) are removed to produce shorter, more telegraphic variants.
-    \item \textbf{Abbreviation expansion}: common medical shorthand is expanded (e.g., \emph{pt} $\rightarrow$ \emph{patient}, \emph{dx} $\rightarrow$ \emph{diagnosis}), producing longer, more verbose variants.
-    \item \textbf{Case and punctuation variation}: lowercase conversion and trailing punctuation removal simulate informal or rushed clinical note entry.
-    \item \textbf{Number-to-word conversion}: standalone numerals are replaced with their written forms (\emph{3 lesions} $\rightarrow$ \emph{three lesions}).
-    \item \textbf{Sentence deletion}: one to two random sentences are removed from the \texttt{transcription} to simulate incomplete notes.
-    \item \textbf{Keyword subset sampling}: a random 65--85\% of keywords are retained and shuffled.
-    \item \textbf{Heavy noise} (intentional): 20\% deletion + three word swaps + full lowercase; applied as a controlled experiment only.
-\end{itemize}
+Crucially, all protected medical terminology (abbreviations, dosages, and hyphenated compounds) was shielded from modification using a rule-based filter to preserve clinical precision. 
 
-All protected medical terminology was identified via a rule-based filter covering all-caps tokens, alphanumeric dosage codes, and hyphenated compound terms, ensuring that clinical precision is preserved in beneficial variants.
+The final augmented training set contains 5{,}624 records. Class distribution after augmentation is shown in Table~\ref{tab:aug_dist}.
 
-
-
-The final augmented training set contains 4{,}041 records. Class distribution after augmentation is shown in Table~\ref{tab:aug_dist}.
+\begin{table}[h]
+\centering
+\caption{Class distribution before and after augmentation.}
+\label{tab:aug_dist}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Specialty} & \textbf{Before} & \textbf{After} \\
+\midrule
+Surgery                  & 876 & 876 \\
+Cardiovascular-Pulmonary & 299 & 460 \\
+Orthopedic               & 292 & 459 \\
+Radiology                & 217 & 444 \\
+General Medicine         & 207 & 442 \\
+Gastroenterology         & 192 & 438 \\
+Neurology                & 181 & 436 \\
+Obstetrics-Gynecology    & 135 & 427 \\
+Neurosurgery             &  78 & 415 \\
+Ophthalmology            &  71 & 414 \\
+Psychiatry-Psychology    &  40 & 408 \\
+Dermatology              &  25 & 405 \\
+\midrule
+\textbf{Total}           & \textbf{2,613} & \textbf{5,624} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ============================================================
 \section{Models}
@@ -142,15 +156,12 @@ The final augmented training set contains 4{,}041 records. Class distribution af
 
 \bibliographystyle{apalike}
 \bibliography{biblio}
-Bibliography does not count for the 3 pages limit.
 
 % One page at most. Only the first two pages of the paper will be read. The appendix should only contain complementary information.
 
 \appendix
 
 \section*{Appendix A: Extra Figures and Tables}
-
-Maximum one page (it does not count for the 3 pages limit): just extra figures and tables. \textbf{Notice that we should be able to understand the 3 pages paper without these figures and tables.}
 
 \begin{figure}[h]
 \centering
@@ -159,61 +170,9 @@ Maximum one page (it does not count for the 3 pages limit): just extra figures a
 \label{fig:text_lengths}
 \end{figure}
 
-\begin{table}[h]
-\centering
-\caption{Class distribution before and after augmentation.}
-\label{tab:aug_dist}
-\small
-\begin{tabular}{lrr}
-\toprule
-\textbf{Specialty} & \textbf{Before} & \textbf{After} \\
-\midrule
-Surgery                  & 876 & 876 \\
-Cardiovascular-Pulmonary & 299 & 299 \\
-Orthopedic               & 292 & 292 \\
-Radiology                & 217 & 217 \\
-General Medicine         & 207 & 207 \\
-Gastroenterology         & 192 & 192 \\
-Neurology                & 181 & 181 \\
-Obstetrics-Gynecology    & 135 & 135 \\
-Neurosurgery             &  78 & 415 \\
-Ophthalmology            &  71 & 414 \\
-Psychiatry-Psychology    &  40 & 408 \\
-Dermatology              &  25 & 405 \\
-\midrule
-\textbf{Total}           & \textbf{2,613} & \textbf{4,041} \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 
-\section{Evaluation and tips (remove this section before submission)}
 
-Scores by section:
-\begin{itemize}
-\item (1.5) Introduction: beyond the classification task itself, \textbf{explicitly} identify the research question your group wants to answer. For instance: how does classical machine learning compare to current language models on clinical text? Which data augmentation strategy is most effective for highly imbalanced medical datasets? This research question should guide your model choices, your experimental setup, and your discussion. It defines the \textbf{story of the paper}. The remaining sections of the paper should be read as an attempt to answer it.
-\item (1.5) Data Analysis: describe the dataset (class distribution and relevant statistics); provide at least 2 concrete observations about patterns or anomalies you found by looking at the data. Generic descriptions score zero.
-\item (2.0) Data Augmentation: you should do some kind of data augmentation. Clearly describe your strategy.
-\item (4.0) Models: clearly describe the models you built and the choices you made, considering the research question you have identified previously (you should describe at least 3 models) (1.0). When describing your models, keep replicability in mind (1.0): would someone be able to reproduce your results just by reading this section? We will also reward creativity (2.0): did you explore different approaches and make thoughtful choices, or did you simply run code you found online?
-\item (1.0) Experimental Setup: provide clear information regarding the used datasets, splits (which result in your own test set(s)), evaluation metrics used and hyperparameters (if applicable).
-\item (1.5) Results: provide the results of your best models, and also results by label of your best model. You should also present a comprehensive confusion matrix of one of your models (not necessarily the best one). The given test set (test\_no\_labels.txt) should ****only**** be used to generate the file results.txt.
-\item (3.0) Discussion: show us that you have properly analysed the dataset and the obtained outputs (not just by looking at statistics or confusion matrices). Try to explain the most common errors. Present and discuss at least 3 concrete examples of misclassified instances from your own test set (include the text excerpt, the predicted label, the correct label, and your interpretation). Generic statements score zero. Also, explain how results align with the research question you have identified in the introduction.
-\item (0.5) Future Work: if more time was given, explain what you would do to improve your system, considering the research question identified in the introduction.
-\item (1.0) References: Identify all papers, external sources, and pre-trained models used; also explicitly declare how have you used LLMs.
-\end{itemize}
-Tips:
-\begin{itemize}
-\item Label figures and tables.
-\item Use the correct quotation marks in Latex (``bla-bla'').
-\item If you use a figure or table, refer to it.
-\item If you say things such as ``The dataset is unbalanced'', explain why (facts).
-\item Use formal English (so, no ``it's'', ``they're'', etc.).
-\item If you mention a hyperparameter, explain it (briefly).
-\item If you use an acronym, use it consistently (check how to do it in latex).
-\item Use labels that are easy to be read in the Confusion Matrix.
-\item Cite your sources (papers) or add footnotes with URLs for computational resources.
-\item Do not use subjective adjectives (e.g.: amazing work, nice concept, ...). This is science.
-\end{itemize}
- 
+
 
 \end{document}

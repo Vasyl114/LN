@@ -92,7 +92,7 @@ for bar, count in zip(bars, class_counts.values[::-1]):
             str(count), va='center', fontsize=9)
 
 ax.set_xlabel('Number of Samples')
-ax.set_title('Figure 1 — Class Distribution of Training Set\n(red = majority class)')
+ax.set_title('Class Distribution of Training Set\n(red = majority class)')
 ax.set_xlim(0, class_counts.max() + 80)
 plt.tight_layout()
 fig_path = os.path.join(FIGURES_DIR, 'fig1_class_distribution.png')
@@ -140,7 +140,7 @@ ax.bar([i + width/2 for i in x], length_table['Avg Words (transcription)'],
 ax.set_xticks(list(x))
 ax.set_xticklabels(length_table.index, rotation=35, ha='right', fontsize=9)
 ax.set_ylabel('Average Word Count')
-ax.set_title('Figure 2 — Average Text Length per Field and Specialty')
+ax.set_title('Average Text Length per Field and Specialty')
 ax.legend()
 plt.tight_layout()
 fig_path = os.path.join(FIGURES_DIR, 'fig2_text_lengths.png')

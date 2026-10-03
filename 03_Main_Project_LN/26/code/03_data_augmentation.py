@@ -427,24 +427,21 @@ def get_clean_variants(seed_base=RANDOM_SEED):
          'desc_fn':  lambda t: random_swap(compress_text(t), n=1, seed=s+21),
          'trans_fn': lambda t: random_deletion(compress_text(t), ratio=0.10, seed=s+22),
          'kw_fn':    lambda k: keyword_subset(k, keep_ratio=0.75, seed=s)},
+        # ── Noise variant (intentional) ──
+        {'name': 'noise_heavy',
+         'desc_fn':  lambda t: heavy_noise(t, seed=s+99),
+         'trans_fn': lambda t: heavy_noise(t, seed=s+100),
+         'kw_fn':    lambda k: case_lower(k)},
     ]
-
-
-NOISE_VARIANT = {
-    'name': 'noise_heavy',
-    'desc_fn':  lambda t: heavy_noise(t, seed=RANDOM_SEED + 99),
-    'trans_fn': lambda t: heavy_noise(t, seed=RANDOM_SEED + 100),
-    'kw_fn':    lambda k: case_lower(k),
-}
 
 
 # ─────────────────────────────────────────────────────────────
 # AUGMENTATION ENGINE
 # ─────────────────────────────────────────────────────────────
-def augment_class(df, class_name, target_count, include_noise=False):
+def augment_class(df, class_name, target_count):
     """
     Generate new records for class_name until target_count is reached.
-    Cycles through the 15 clean variants (+ noise variant if requested).
+    Cycles through all variants (including noise).
     If the class is already at or above target_count, returns empty DataFrame.
     """
     class_df = df[df['medical_specialty'] == class_name].copy().reset_index(drop=True)
@@ -458,8 +455,6 @@ def augment_class(df, class_name, target_count, include_noise=False):
     print(f"  [{class_name}] {n_original} → {target_count} | Generating {n_needed} new records...")
 
     variants = get_clean_variants()
-    if include_noise:
-        variants = variants + [NOISE_VARIANT]
 
     augmented_rows = []
     row_index = 0
@@ -469,12 +464,14 @@ def augment_class(df, class_name, target_count, include_noise=False):
         row = class_df.iloc[row_index % n_original]
         v = variants[variant_index % len(variants)]
         try:
+            kw_val = row.get('keywords')
+            kw_val_str = '' if pd.isna(kw_val) else str(kw_val)
             new_row = {
                 'medical_specialty': row['medical_specialty'],
                 'description':       v['desc_fn'](str(row.get('description', ''))),
                 'sample_name':       row.get('sample_name', ''),
                 'transcription':     v['trans_fn'](str(row.get('transcription', ''))),
-                'keywords':          v['kw_fn'](str(row.get('keywords', ''))),
+                'keywords':          v['kw_fn'](kw_val_str) if kw_val_str else np.nan,
             }
             # Skip if the description became empty or too short
             if len(str(new_row['description']).split()) >= 3:
@@ -568,73 +565,50 @@ def main():
     print("=" * 60)
     acc_base, _ = evaluate_on_dev(train_orig, dev_df, label='No augmentation:')
 
-    # ── Generate CLEAN augmented records ──
+    # ── Generate AUGMENTED records ──
     print("\n" + "=" * 60)
-    print("STEP 2: Generating clean augmented records")
+    print("STEP 2: Generating augmented records for all classes < 400")
     print("=" * 60)
-    priority_classes = ['Dermatology', 'Psychiatry-Psychology', 'Ophthalmology', 'Neurosurgery']
-    clean_parts = []
-    for cls in priority_classes:
-        aug = augment_class(train_orig, cls, TARGET_COUNT, include_noise=False)
+    
+    # Augment all classes that are below the TARGET_COUNT
+    classes_to_augment = df['medical_specialty'].value_counts()
+    classes_to_augment = classes_to_augment[classes_to_augment < TARGET_COUNT].index.tolist()
+    
+    aug_parts = []
+    for cls in classes_to_augment:
+        aug = augment_class(train_orig, cls, TARGET_COUNT)
         if not aug.empty:
-            clean_parts.append(aug)
+            aug_parts.append(aug)
 
-    aug_clean = pd.concat(clean_parts, ignore_index=True) if clean_parts else pd.DataFrame()
-    train_clean = (pd.concat([train_orig, aug_clean], ignore_index=True)
-                   .sample(frac=1, random_state=RANDOM_SEED)
-                   .reset_index(drop=True))
+    aug_df = pd.concat(aug_parts, ignore_index=True) if aug_parts else pd.DataFrame()
+    train_aug = (pd.concat([train_orig, aug_df], ignore_index=True)
+                 .sample(frac=1, random_state=RANDOM_SEED)
+                 .reset_index(drop=True))
 
-    # ── Evaluate with clean augmentation ──
+    # ── Evaluate with augmentation ──
     print("\n" + "=" * 60)
-    print("STEP 3: Evaluation with clean augmentation")
+    print("STEP 3: Evaluation with all augmentation variants")
     print("=" * 60)
-    acc_clean, _ = evaluate_on_dev(train_clean, dev_df, label='With clean augmentation:')
-
-    # ── Generate NOISY augmented records ──
-    print("\n" + "=" * 60)
-    print("STEP 4: Generating noisy augmented records")
-    print("=" * 60)
-    noisy_parts = []
-    for cls in priority_classes:
-        aug = augment_class(train_orig, cls, TARGET_COUNT, include_noise=True)
-        if not aug.empty:
-            noisy_parts.append(aug)
-
-    aug_noisy = pd.concat(noisy_parts, ignore_index=True) if noisy_parts else pd.DataFrame()
-    train_noisy = (pd.concat([train_orig, aug_noisy], ignore_index=True)
-                   .sample(frac=1, random_state=RANDOM_SEED)
-                   .reset_index(drop=True))
-
-    # ── Evaluate with noisy augmentation ──
-    print("\n" + "=" * 60)
-    print("STEP 5: Evaluation with noisy augmentation")
-    print("=" * 60)
-    acc_noisy, _ = evaluate_on_dev(train_noisy, dev_df, label='With noisy augmentation:')
+    acc_aug, _ = evaluate_on_dev(train_aug, dev_df, label='With augmentation:')
 
     # ── Summary ──
     print("\n" + "=" * 60)
     print("SUMMARY — DEV SET COMPARISON")
     print("=" * 60)
-    print(f"  No augmentation      : {acc_base*100:.2f}%")
-    print(f"  Clean augmentation   : {acc_clean*100:.2f}%   (Δ {(acc_clean - acc_base)*100:+.2f}%)")
-    print(f"  Noisy augmentation   : {acc_noisy*100:.2f}%   (Δ {(acc_noisy - acc_base)*100:+.2f}%)")
+    print(f"  No augmentation : {acc_base*100:.2f}%")
+    print(f"  Augmentation    : {acc_aug*100:.2f}%   (Δ {(acc_aug - acc_base)*100:+.2f}%)")
     print()
-    if acc_clean > acc_base:
-        print("  ✓ Clean augmentation improved performance — use train_augmented.csv")
-    else:
-        print("  ✗ Clean augmentation did not improve — review generated records")
 
     # ── Class distribution before/after ──
     print("\n" + "=" * 60)
-    print("CLASS DISTRIBUTION — BEFORE vs AFTER (clean augmentation)")
+    print("CLASS DISTRIBUTION — BEFORE vs AFTER")
     print("=" * 60)
     before = train_orig['medical_specialty'].value_counts()
 
-    # The final files combine ALL original data (not just 80%) + augmented
-    full_clean = pd.concat([df, aug_clean], ignore_index=True)
-    full_noisy = pd.concat([df, aug_noisy], ignore_index=True)
+    # The final file combines ALL original data (not just 80%) + augmented
+    full_aug = pd.concat([df, aug_df], ignore_index=True)
 
-    after = full_clean['medical_specialty'].value_counts()
+    after = full_aug['medical_specialty'].value_counts()
     for cls in after.sort_values(ascending=False).index:
         b = before.get(cls, 0)
         a = after.get(cls, 0)
@@ -646,17 +620,11 @@ def main():
     print("SAVING OUTPUT FILES")
     print("=" * 60)
 
-    full_clean = full_clean.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
-    full_noisy = full_noisy.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
+    full_aug = full_aug.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
 
-    full_clean.to_csv('train_augmented.csv', sep=';', quotechar='"',
+    full_aug.to_csv('train_augmented.csv', sep=';', quotechar='"',
                       quoting=1, index=False)
-    print(f"  Saved: train_augmented.csv          ({len(full_clean)} total records)")
-
-    full_noisy.to_csv('train_augmented_with_noise.csv', sep=';', quotechar='"',
-                      quoting=1, index=False)
-    print(f"  Saved: train_augmented_with_noise.csv ({len(full_noisy)} total records)")
-
+    print(f"  Saved: train_augmented.csv          ({len(full_aug)} total records)")
     print("\nDone. Use train_augmented.csv for all model training in Phases 3–4.")
 
 
