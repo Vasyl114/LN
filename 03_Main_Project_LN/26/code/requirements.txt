@@ -1,0 +1,13 @@
+# Versions used for every number in the paper (Python 3.10.12, Linux, CPU only).
+# Install:  pip install -r requirements.txt
+#           pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+pandas==2.3.3
+numpy==1.26.4
+scipy==1.15.3
+scikit-learn==1.7.2
+nltk==3.10.3
+matplotlib==3.10.9
+transformers==5.19.0
+# torch==2.14.1 (CPU build, installed with the command above)
+# Pre-trained model (downloaded by 05_model_bert.py, pinned to this exact revision):
+#   emilyalsentzer/Bio_ClinicalBERT @ d5892b39a4adaed74b92212a44081509db72f87b

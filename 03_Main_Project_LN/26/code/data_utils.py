@@ -23,6 +23,13 @@ PURPOSE:
       - the held-out records are only used to measure a model, never to train
         it and never as a source for data augmentation
 
+    TWO PROPERTIES OF THE DATASET USED BY THE MODELS (measured in 02_data_analysis.py):
+      - a note is listed once per specialty, never twice under the same one, so a
+        held-out note that already exists in the training data almost always has
+        a DIFFERENT label (242 of 243 cases). copy_aware_scores() uses this.
+      - the first keyword is the specialty itself (100% of the records that have
+        keywords). first_keyword_label() exposes it as a separate feature.
+
 HOW TO USE:
     from data_utils import load_train, split_train_heldout
     df = load_train()
@@ -156,6 +163,57 @@ def remove_heldout(df, heldout_df):
         return d[COLUMNS].fillna('').astype(str).agg('\x1f'.join, axis=1)
 
     return df[~as_key(df).isin(set(as_key(heldout_df)))]
+
+
+# The keywords write the specialty as e.g. "cardiovascular / pulmonary"
+KEYWORD_TO_LABEL = {label.lower().replace('-', ' / '): label for label in VALID_LABELS}
+
+
+def note_key(df):
+    """
+    Identity of a clinical note: its transcription, or description + sample name
+    when the transcription is empty. Copies of a note listed under several
+    specialties share this key.
+    """
+    fallback = df['description'].fillna('') + '||' + df['sample_name'].fillna('')
+    return df['transcription'].where(df['transcription'].notna(), fallback)
+
+
+def seen_labels(train_df):
+    """
+    Dictionary note key -> set of labels that the training data carries for that note.
+    Must be built from the ORIGINAL training records only (no augmented records,
+    no held-out records).
+    """
+    table = pd.DataFrame({'key': note_key(train_df), 'label': train_df['medical_specialty']})
+    return table.groupby('key')['label'].agg(set).to_dict()
+
+
+def copy_aware_scores(scores, classes, df, seen):
+    """
+    Remove from the candidates the labels that the training data already carries
+    for the same note: the dataset lists a note once per specialty, so the copy
+    in df almost never has one of those labels. Returns a new score array
+    (rows of df x classes) where those labels can no longer be the argmax.
+    """
+    classes = list(classes)
+    out = np.array(scores, dtype=float, copy=True)
+    for i, key in enumerate(note_key(df)):
+        labels = seen.get(key)
+        if labels:
+            columns = [classes.index(label) for label in labels]
+            if len(columns) < len(classes):          # never remove every candidate
+                out[i, columns] = -1e9
+    return out
+
+
+def first_keyword_label(df):
+    """
+    The specialty named by the first keyword of each record, or 'none' when the
+    record has no keywords (or the first keyword is not a specialty name).
+    """
+    first = df['keywords'].fillna('').str.split(',').str[0].str.strip().str.lower()
+    return first.map(KEYWORD_TO_LABEL).fillna('none')
 
 
 if __name__ == '__main__':

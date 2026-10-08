@@ -1,0 +1,87 @@
+{
+  "name": "m3_L1",
+  "n_heldout": 534,
+  "accuracy": 0.7565543071161048,
+  "macro_f1": 0.7365973556747635,
+  "lowest_class_f1": 0.5714285714285714,
+  "lowest_class": "Dermatology",
+  "classes_below_min_f1": 0,
+  "classes_never_predicted": 0,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.7603305785123967,
+    "Dermatology": 0.5714285714285714,
+    "Gastroenterology": 0.7906976744186046,
+    "General Medicine": 0.7142857142857143,
+    "Neurology": 0.6388888888888888,
+    "Neurosurgery": 0.7142857142857143,
+    "Obstetrics-Gynecology": 0.8421052631578947,
+    "Ophthalmology": 0.8,
+    "Orthopedic": 0.7022900763358778,
+    "Psychiatry-Psychology": 0.8,
+    "Radiology": 0.6987951807228916,
+    "Surgery": 0.806060606060606
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": true,
+    "no_class_f1_below_25": true
+  },
+  "config": {
+    "model_name": "emilyalsentzer/Bio_ClinicalBERT",
+    "revision": "d5892b39a4adaed74b92212a44081509db72f87b",
+    "input": "description",
+    "max_length": 128,
+    "learning_rate": 3e-05,
+    "batch_size": 16,
+    "epochs": 3,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01,
+    "bucket_batches": 50,
+    "threads": 4,
+    "seed": 42,
+    "training_file": "train_augmented.csv",
+    "training_records": 5114,
+    "torch": "2.14.1+cpu",
+    "transformers": "5.19.0",
+    "epoch_log": [
+      {
+        "epoch": 1,
+        "train_loss": 1.547739381995052,
+        "seconds": 1084,
+        "heldout_accuracy_L0": 0.5337078651685393,
+        "heldout_macro_f1_L0": 0.5683407095633143,
+        "heldout_accuracy_L1": 0.7359550561797753
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.637629073811695,
+        "seconds": 990,
+        "heldout_accuracy_L0": 0.50187265917603,
+        "heldout_macro_f1_L0": 0.5179361102366361,
+        "heldout_accuracy_L1": 0.7415730337078652
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.49244982867967335,
+        "seconds": 969,
+        "heldout_accuracy_L0": 0.4887640449438202,
+        "heldout_macro_f1_L0": 0.5101161117801613,
+        "heldout_accuracy_L1": 0.7565543071161048
+      }
+    ],
+    "classes": [
+      "Cardiovascular-Pulmonary",
+      "Dermatology",
+      "Gastroenterology",
+      "General Medicine",
+      "Neurology",
+      "Neurosurgery",
+      "Obstetrics-Gynecology",
+      "Ophthalmology",
+      "Orthopedic",
+      "Psychiatry-Psychology",
+      "Radiology",
+      "Surgery"
+    ],
+    "layer": "L1"
+  }
+}

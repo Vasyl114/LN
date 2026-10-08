@@ -18,15 +18,17 @@
 
 \begin{document}
 
+\raggedbottom  % columns end where the text ends instead of stretching the spacing
+
 \maketitle
 
 % Acronym definitions (used consistently throughout)
-\acrodef{nlp}{Natural Language Processing}
-\acrodef{tfidf}{Term Frequency--Inverse Document Frequency}
-\acrodef{mnb}{Multinomial Naive Bayes}
-\acrodef{lr}{Logistic Regression}
-\acrodef{svm}{Support Vector Machine}
-\acrodef{eda}{Easy Data Augmentation}
+\acrodef{nlp}[NLP]{Natural Language Processing}
+\acrodef{tfidf}[TF-IDF]{Term Frequency--Inverse Document Frequency}
+\acrodef{mnb}[MNB]{Multinomial Naive Bayes}
+\acrodef{lr}[LR]{Logistic Regression}
+\acrodef{svm}[SVM]{Support Vector Machine}
+\acrodef{eda}[EDA]{Easy Data Augmentation}
 
 % ============================================================
 \section{Introduction}
@@ -56,6 +58,7 @@ To answer it, we first analyse the data (Section~\ref{sec:analysis}) and reduce 
 \caption{Records per specialty in the training data, and in the training file after augmentation (Section~\ref{sec:augmentation}).}
 \label{tab:class_dist}
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrr}
 \toprule
 \textbf{Specialty} & \textbf{Records} & \textbf{\%} & \textbf{After} \\
@@ -89,7 +92,7 @@ Descriptions average 18.9 words and transcriptions 457.0, from 275.3 (Radiology)
 
 \textbf{Motivation.} The four smallest classes have 25 to 79 records (Table~\ref{tab:class_dist}). We therefore enlarge every class below 400 records.
 
-\textbf{Strategy.} New records are derived from existing ones through 15 variants inspired by \ac{eda}~\cite{wei2019eda}, which combine: synonym replacement (a curated map of 28 clinical terms, then the most common WordNet~\cite{miller1995wordnet} sense for other words); deletion of 5--20\% of the words or of one or two sentences, in the transcription only; swapping of adjacent words; removal of filler words; expansion of seven unambiguous abbreviations (e.g., \emph{hx} $\rightarrow$ \emph{history}); lowercasing; and rewriting of isolated numbers as words. Keywords are subsampled (65--85\%) and shuffled. Synonym replacement and word deletion never touch upper-case abbreviations, numbers, dosages, spinal levels, hyphenated compounds, or laterality and negation words (e.g., \emph{left}, \emph{no}).
+\textbf{Strategy.} New records are derived from existing ones through 15 variants inspired by \ac{eda}~\cite{wei2019eda}, which combine: synonym replacement (a curated map of 28 clinical terms, then the most common WordNet~\cite{miller1995wordnet} sense for other words); deletion of 5--20\% of the words or of one or two sentences, in the transcription only; swapping of adjacent words; removal of filler words; expansion of seven unambiguous abbreviations (e.g., \emph{hx} $\rightarrow$ \emph{history}); lowercasing; and rewriting of isolated numbers as words. Keywords after the first one are subsampled (65--85\%) and shuffled; the first one, the specialty, stays in place. Synonym replacement and word deletion never touch upper-case abbreviations, numbers, dosages, spinal levels, hyphenated compounds, or laterality and negation words (e.g., \emph{left}, \emph{no}).
 
 \textbf{Procedure.} The data are split into a training portion (80\%, 2{,}135 records) and a held-out portion (20\%, 534 records), stratified by label (random seed 42). Records are generated only from the training portion. In pass $c$ over a class, record $r$ receives variant $(r + c) \bmod 15$, until the class has 400 training records; outputs identical to an existing record are discarded.
 

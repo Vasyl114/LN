@@ -279,7 +279,8 @@ Describe exactly what you did: how many samples you generated, for which classes
 
 **What you already have:**
 - Model 1 (Naive Bayes baseline) → `01_baseline_model.py` ✅ — **Already done!**
-- Results from Model 1: **37.09% accuracy** on the validation set ✅
+- Results from Model 1: **38.76% accuracy, 13.66% macro-F1** on the held-out set (534 records, fixed split) ✅
+  (the earlier 37.09% used a different row set and split; the models phase now follows `Report_Plan.md` and `Models_Rationale.md`, not Phase 3 below)
 
 ---
 
@@ -312,7 +313,7 @@ Describe exactly what you did: how many samples you generated, for which classes
 
 | Model | Input | Algorithm | Class Weight | Accuracy | Macro F1 |
 |---|---|---|---|---|---|
-| M1 Baseline | description | Naive Bayes | None | 37.09% | ? |
+| M1 Baseline | description | Naive Bayes | None | 38.76% | 13.66% |
 | M2-A | description | Logistic Regression | None | ? | ? |
 | M2-B | desc+keywords+name | Logistic Regression | None | ? | ? |
 | M2-C | desc+keywords+name | Logistic Regression | Balanced | ? | ? |
@@ -388,7 +389,7 @@ Answer these questions in writing:
 
 | Model | Input | Algorithm | Accuracy | Macro F1 |
 |---|---|---|---|---|
-| M1 — Baseline | description | Naive Bayes + TF-IDF | 37.09% | low |
+| M1 — Baseline | description | Naive Bayes + TF-IDF | 38.76% | 13.66% |
 | M2-A | description | Logistic Regression + TF-IDF | ?% | ? |
 | M2-B | desc + keywords + name | Logistic Regression + TF-IDF | ?% | ? |
 | M2-C | desc + keywords + name | LR + TF-IDF + class weight | ?% | ? |

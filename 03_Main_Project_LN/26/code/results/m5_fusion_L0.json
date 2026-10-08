@@ -1,0 +1,35 @@
+{
+  "name": "m5_fusion_L0",
+  "n_heldout": 534,
+  "accuracy": 0.4400749063670412,
+  "macro_f1": 0.49145841355913517,
+  "lowest_class_f1": 0.1951219512195122,
+  "lowest_class": "Radiology",
+  "classes_below_min_f1": 1,
+  "classes_never_predicted": 0,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.375,
+    "Dermatology": 0.6666666666666666,
+    "Gastroenterology": 0.5544554455445545,
+    "General Medicine": 0.7578947368421053,
+    "Neurology": 0.34375,
+    "Neurosurgery": 0.27906976744186046,
+    "Obstetrics-Gynecology": 0.6086956521739131,
+    "Ophthalmology": 0.6222222222222222,
+    "Orthopedic": 0.36496350364963503,
+    "Psychiatry-Psychology": 0.75,
+    "Radiology": 0.1951219512195122,
+    "Surgery": 0.37966101694915255
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": false,
+    "no_class_f1_below_25": false
+  },
+  "config": {
+    "model": "Fusion",
+    "layer": "L0",
+    "keyword_weight": 3.0,
+    "ngram_range": "(1, 1)",
+    "C": "0.5"
+  }
+}

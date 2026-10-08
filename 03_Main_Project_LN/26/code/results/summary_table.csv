@@ -1,0 +1,27 @@
+run,accuracy_%,macro_f1_%,lowest_class_f1_%,lowest_class
+m1_baseline_original,38.76,13.66,0.0,Dermatology
+m1_baseline_train_augmented,41.76,41.65,21.05,Neurology
+m2_d_augmented_L0,36.89,38.06,19.05,Radiology
+m2_d_augmented_L1,64.23,61.06,30.77,Dermatology
+m2_d_original_L0,36.7,37.31,19.51,Radiology
+m2_d_original_L1,65.17,61.62,44.44,Psychiatry-Psychology
+m2_dn_augmented_L0,41.01,44.44,17.5,Radiology
+m2_dn_augmented_L1,72.66,71.28,54.55,Dermatology
+m2_dn_original_L0,40.82,42.77,20.0,Neurosurgery
+m2_dn_original_L1,71.91,69.47,46.15,Dermatology
+m2_dnt_augmented_L0,41.76,46.69,19.51,Neurosurgery
+m2_dnt_augmented_L1,78.28,78.15,66.67,Dermatology
+m2_dnt_original_L0,42.7,47.48,23.81,Neurosurgery
+m2_dnt_original_L1,77.9,77.77,66.67,Dermatology
+m2_main_L0,41.76,46.69,19.51,Neurosurgery
+m2_main_L1,78.28,78.15,66.67,Dermatology
+m3_L0,48.88,51.01,20.78,Radiology
+m3_L1,75.66,73.66,57.14,Dermatology
+m5_fusion_L0,44.01,49.15,19.51,Radiology
+m5_fusion_L1,79.4,79.94,70.59,Radiology
+m5_fusion_L2,94.76,93.58,80.0,General Medicine
+m5_m2_L0,41.76,46.69,19.51,Neurosurgery
+m5_m2_L1,78.28,78.15,66.67,Dermatology
+m5_m2_L2,93.26,91.32,76.19,General Medicine
+m5_m3_L0,48.88,51.01,20.78,Radiology
+m5_m3_L1,75.66,73.66,57.14,Dermatology

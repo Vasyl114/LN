@@ -1,0 +1,35 @@
+{
+  "name": "m1_baseline_train_augmented",
+  "n_heldout": 534,
+  "accuracy": 0.41760299625468167,
+  "macro_f1": 0.4165251202272398,
+  "lowest_class_f1": 0.21052631578947367,
+  "lowest_class": "Neurology",
+  "classes_below_min_f1": 1,
+  "classes_never_predicted": 0,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.36893203883495146,
+    "Dermatology": 0.2857142857142857,
+    "Gastroenterology": 0.5111111111111111,
+    "General Medicine": 0.5490196078431373,
+    "Neurology": 0.21052631578947367,
+    "Neurosurgery": 0.4897959183673469,
+    "Obstetrics-Gynecology": 0.5757575757575758,
+    "Ophthalmology": 0.5,
+    "Orthopedic": 0.3389830508474576,
+    "Psychiatry-Psychology": 0.5,
+    "Radiology": 0.25,
+    "Surgery": 0.41846153846153844
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": false,
+    "no_class_f1_below_25": false
+  },
+  "config": {
+    "model": "MultinomialNB + TfidfVectorizer (defaults)",
+    "input": "description",
+    "preprocessing": "lowercase + PorterStemmer",
+    "training_file": "train_augmented.csv",
+    "training_records": 5114
+  }
+}

@@ -26,6 +26,7 @@ HOW TO RUN:
         python3 01_baseline_model.py                        # original training data
         python3 01_baseline_model.py train_augmented.csv    # any other training file
     The training file must have the same five columns as train.csv.
+    Results are also saved in results/ (see evaluation.py).
 """
 
 import os
@@ -35,17 +36,13 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, f1_score, classification_report
 
 from data_utils import load_train, split_train_heldout, remove_heldout, TRAIN_PATH
+from evaluation import summarize
 
 # Download NLTK data for tokenization (only needed the first time)
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
-
-# The two conditions of the automatic evaluation (project statement, Section 4)
-MIN_ACCURACY = 0.49   # accuracy must be above this value
-MIN_CLASS_F1 = 0.25   # no per-class F1 may fall below this value
 
 stemmer = PorterStemmer()
 
@@ -99,38 +96,13 @@ def main():
     model.fit(X_train_tfidf, y_train)
     y_pred = model.predict(X_heldout_tfidf)
 
-    # ── Results ──
-    accuracy = accuracy_score(y_heldout, y_pred)
-    macro_f1 = f1_score(y_heldout, y_pred, average='macro', zero_division=0)
-    report = classification_report(y_heldout, y_pred, zero_division=0, output_dict=True)
-    class_f1 = {cls: report[cls]['f1-score'] for cls in sorted(y_heldout.unique())}
-    worst_class = min(class_f1, key=class_f1.get)
-
-    # Reference point: always answering with the most frequent training class
-    majority_class = y_train.value_counts().idxmax()
-    majority_acc = (y_heldout == majority_class).mean()
-
+    # ── Results (same evaluation as every other model, see evaluation.py) ──
     print("Results per specialty:")
-    print(classification_report(y_heldout, y_pred, zero_division=0, digits=3))
-
-    print("=" * 60)
-    print("SUMMARY")
-    print("=" * 60)
-    print(f"  Accuracy                   : {accuracy * 100:.2f}%")
-    print(f"  Macro F1                   : {macro_f1 * 100:.2f}%")
-    print(f"  Lowest class F1            : {class_f1[worst_class] * 100:.2f}% ({worst_class})")
-    print(f"  Classes with F1 below {MIN_CLASS_F1 * 100:.0f}%  : "
-          f"{sum(f1 < MIN_CLASS_F1 for f1 in class_f1.values())} of {len(class_f1)}")
-    print(f"  Classes never predicted    : "
-          f"{sum(report[cls]['recall'] == 0 for cls in class_f1)} of {len(class_f1)}")
-    print(f"  Always answering '{majority_class}' : {majority_acc * 100:.2f}% accuracy (reference)")
-    print()
-    print("  Conditions of the automatic evaluation, measured here on the")
-    print("  held-out records (the official ones use the hidden test labels):")
-    print(f"    Accuracy above {MIN_ACCURACY * 100:.0f}%          : "
-          f"{'YES' if accuracy > MIN_ACCURACY else 'NO'}")
-    print(f"    No class F1 below {MIN_CLASS_F1 * 100:.0f}%       : "
-          f"{'YES' if class_f1[worst_class] >= MIN_CLASS_F1 else 'NO'}")
+    name = 'm1_baseline_' + ('original' if data_path == TRAIN_PATH else os.path.splitext(os.path.basename(data_path))[0])
+    summarize(name, heldout_df, y_pred, per_class_table=True, train_labels=y_train,
+              config={'model': 'MultinomialNB + TfidfVectorizer (defaults)', 'input': 'description',
+                      'preprocessing': 'lowercase + PorterStemmer', 'training_file': data_path,
+                      'training_records': int(len(train_df))})
 
 
 if __name__ == "__main__":

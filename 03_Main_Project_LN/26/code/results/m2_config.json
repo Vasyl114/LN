@@ -1,0 +1,23 @@
+{
+  "classes": [
+    "Cardiovascular-Pulmonary",
+    "Dermatology",
+    "Gastroenterology",
+    "General Medicine",
+    "Neurology",
+    "Neurosurgery",
+    "Obstetrics-Gynecology",
+    "Ophthalmology",
+    "Orthopedic",
+    "Psychiatry-Psychology",
+    "Radiology",
+    "Surgery"
+  ],
+  "fields": "DNT",
+  "training_file": "augmented",
+  "ngram_range": [
+    1,
+    1
+  ],
+  "C": 0.5
+}

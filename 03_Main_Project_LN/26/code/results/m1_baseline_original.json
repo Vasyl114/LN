@@ -1,0 +1,35 @@
+{
+  "name": "m1_baseline_original",
+  "n_heldout": 534,
+  "accuracy": 0.38764044943820225,
+  "macro_f1": 0.1366028814497677,
+  "lowest_class_f1": 0.0,
+  "lowest_class": "Dermatology",
+  "classes_below_min_f1": 9,
+  "classes_never_predicted": 6,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.32967032967032966,
+    "Dermatology": 0.0,
+    "Gastroenterology": 0.0,
+    "General Medicine": 0.41379310344827586,
+    "Neurology": 0.05,
+    "Neurosurgery": 0.0,
+    "Obstetrics-Gynecology": 0.0,
+    "Ophthalmology": 0.0,
+    "Orthopedic": 0.1282051282051282,
+    "Psychiatry-Psychology": 0.0,
+    "Radiology": 0.1791044776119403,
+    "Surgery": 0.5384615384615384
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": false,
+    "no_class_f1_below_25": false
+  },
+  "config": {
+    "model": "MultinomialNB + TfidfVectorizer (defaults)",
+    "input": "description",
+    "preprocessing": "lowercase + PorterStemmer",
+    "training_file": "../../StudentsPack/train.csv",
+    "training_records": 2135
+  }
+}

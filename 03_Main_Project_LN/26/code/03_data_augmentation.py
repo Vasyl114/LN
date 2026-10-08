@@ -311,6 +311,8 @@ def sentence_deletion(text, seed=42):
 def keyword_subset(keywords, keep_ratio=0.75, seed=42):
     """
     Keep a random subset of keywords, shuffled.
+    The first keyword is the specialty of the record, so it always stays in first
+    place; only the keywords after it are subsampled and shuffled.
     Empty keyword fields are left as-is.
     """
     if not isinstance(keywords, str) or len(keywords.strip()) < 3:
@@ -320,9 +322,9 @@ def keyword_subset(keywords, keep_ratio=0.75, seed=42):
     if len(kw_list) <= 2:
         return keywords
     n_keep = max(2, int(len(kw_list) * keep_ratio))
-    kept = rng.sample(kw_list, n_keep)
+    kept = rng.sample(kw_list[1:], n_keep - 1)
     rng.shuffle(kept)
-    return ', '.join(kept)
+    return ', '.join([kw_list[0]] + kept)
 
 
 # ─────────────────────────────────────────────────────────────

@@ -1,0 +1,535 @@
+record_id,true,pred
+2465,Surgery,Surgery
+419,Gastroenterology,General Medicine
+2379,Surgery,Surgery
+1710,Radiology,Radiology
+1731,Radiology,Radiology
+639,General Medicine,Neurology
+2170,Surgery,Surgery
+1824,Surgery,Surgery
+455,Gastroenterology,Gastroenterology
+658,General Medicine,General Medicine
+1982,Surgery,Surgery
+34,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2629,Surgery,Surgery
+2038,Surgery,Surgery
+2178,Surgery,Surgery
+2264,Surgery,Surgery
+2063,Surgery,Surgery
+2223,Surgery,Surgery
+2584,Surgery,Surgery
+243,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1959,Surgery,Surgery
+2373,Surgery,Surgery
+1379,Orthopedic,Orthopedic
+50,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1862,Surgery,Surgery
+651,General Medicine,General Medicine
+191,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+473,Gastroenterology,Gastroenterology
+49,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2491,Surgery,Surgery
+2366,Surgery,Surgery
+783,Neurology,Neurology
+237,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1681,Radiology,Radiology
+1369,Orthopedic,Orthopedic
+880,Neurology,Neurology
+1168,Ophthalmology,Ophthalmology
+2052,Surgery,Surgery
+1868,Surgery,Surgery
+1429,Orthopedic,Orthopedic
+52,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2451,Surgery,Surgery
+471,Gastroenterology,Gastroenterology
+1090,Orthopedic,Orthopedic
+1034,Obstetrics-Gynecology,Obstetrics-Gynecology
+688,General Medicine,General Medicine
+1666,Radiology,Radiology
+1510,Psychiatry-Psychology,Psychiatry-Psychology
+2527,Surgery,Surgery
+905,Neurology,Neurology
+1540,Psychiatry-Psychology,Psychiatry-Psychology
+1712,Radiology,Radiology
+607,General Medicine,General Medicine
+1227,Orthopedic,Orthopedic
+1878,Surgery,Surgery
+1914,Surgery,Surgery
+2290,Surgery,Surgery
+1639,Radiology,Radiology
+946,Orthopedic,Orthopedic
+1292,Orthopedic,Orthopedic
+1548,Radiology,Radiology
+2220,Surgery,Surgery
+2663,Surgery,Surgery
+151,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2044,Surgery,Surgery
+1763,Surgery,Surgery
+1463,Orthopedic,Orthopedic
+328,Gastroenterology,Gastroenterology
+2188,Surgery,Surgery
+968,Neurosurgery,Neurosurgery
+1797,Surgery,Surgery
+1598,Radiology,Radiology
+2418,Surgery,Cardiovascular-Pulmonary
+447,Gastroenterology,Gastroenterology
+759,Neurology,Neurology
+272,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1262,Orthopedic,Orthopedic
+2086,Surgery,Orthopedic
+2342,Gastroenterology,Gastroenterology
+616,General Medicine,General Medicine
+835,Neurology,Neurology
+913,Neurosurgery,Neurosurgery
+1903,Surgery,Surgery
+266,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1937,Surgery,Surgery
+1728,Radiology,Radiology
+975,Neurosurgery,Neurosurgery
+1193,Ophthalmology,Ophthalmology
+2398,Surgery,Surgery
+385,Gastroenterology,Gastroenterology
+528,General Medicine,General Medicine
+2327,Surgery,Surgery
+1306,Orthopedic,Orthopedic
+1198,Ophthalmology,Ophthalmology
+193,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+370,Gastroenterology,General Medicine
+767,Neurology,Neurology
+2209,Surgery,Surgery
+874,Neurology,Neurology
+780,Neurology,Neurology
+102,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+934,Neurosurgery,Neurosurgery
+2363,Surgery,Surgery
+1551,Radiology,Radiology
+1509,Psychiatry-Psychology,Psychiatry-Psychology
+1817,Surgery,Surgery
+91,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+47,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+720,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+300,Dermatology,Dermatology
+1547,Radiology,Radiology
+1064,Obstetrics-Gynecology,Obstetrics-Gynecology
+1487,Orthopedic,Orthopedic
+1609,Radiology,Radiology
+887,Neurology,Neurology
+714,Neurosurgery,Neurosurgery
+2623,Surgery,Surgery
+611,General Medicine,General Medicine
+2520,Surgery,Surgery
+2654,Surgery,Surgery
+1843,Surgery,Surgery
+1167,Ophthalmology,Ophthalmology
+508,Gastroenterology,Gastroenterology
+523,General Medicine,General Medicine
+295,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+768,Neurology,General Medicine
+1640,Radiology,Radiology
+2280,Surgery,Surgery
+916,Neurosurgery,Neurosurgery
+1718,Radiology,Radiology
+2664,Surgery,Surgery
+168,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+273,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1041,Obstetrics-Gynecology,Obstetrics-Gynecology
+43,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+820,Neurology,Neurology
+2219,Surgery,Surgery
+2437,Surgery,Surgery
+2549,Surgery,Surgery
+315,Dermatology,Dermatology
+176,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+13,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1945,Surgery,Surgery
+2657,Surgery,Surgery
+2083,Surgery,Surgery
+1303,Orthopedic,Orthopedic
+1994,Surgery,Surgery
+1773,Surgery,Surgery
+1085,Obstetrics-Gynecology,Obstetrics-Gynecology
+2458,Surgery,Surgery
+1354,Orthopedic,Orthopedic
+344,Gastroenterology,Gastroenterology
+1688,Radiology,Radiology
+1657,Radiology,Radiology
+623,General Medicine,General Medicine
+786,Neurology,Neurology
+1159,Ophthalmology,Ophthalmology
+1304,Orthopedic,Orthopedic
+2112,Surgery,Surgery
+448,Gastroenterology,Gastroenterology
+2331,Radiology,Radiology
+2131,Surgery,Surgery
+1582,Radiology,Radiology
+1315,Orthopedic,Orthopedic
+1243,Orthopedic,Orthopedic
+832,Neurology,Neurology
+2056,Surgery,Surgery
+464,Gastroenterology,Gastroenterology
+1587,Radiology,Radiology
+189,Cardiovascular-Pulmonary,General Medicine
+2642,Surgery,Surgery
+1656,Radiology,Radiology
+2262,Surgery,Surgery
+1093,General Medicine,Cardiovascular-Pulmonary
+2143,Surgery,Surgery
+2512,Surgery,Surgery
+2142,Surgery,Surgery
+1121,Obstetrics-Gynecology,Obstetrics-Gynecology
+359,Gastroenterology,General Medicine
+338,Gastroenterology,Gastroenterology
+318,Dermatology,Dermatology
+2155,Surgery,Surgery
+1604,Radiology,Radiology
+2579,Surgery,Surgery
+2368,Surgery,Surgery
+1125,Obstetrics-Gynecology,General Medicine
+2292,Surgery,Surgery
+1295,Orthopedic,Orthopedic
+216,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+804,Neurology,Neurology
+374,Gastroenterology,Gastroenterology
+852,Neurology,Neurology
+1881,Surgery,Surgery
+541,General Medicine,General Medicine
+2238,Surgery,Surgery
+810,Neurology,Neurology
+1422,Orthopedic,Orthopedic
+457,Gastroenterology,Gastroenterology
+2507,Surgery,Surgery
+80,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2362,Surgery,Surgery
+1231,Orthopedic,Orthopedic
+345,Gastroenterology,Gastroenterology
+694,General Medicine,General Medicine
+594,General Medicine,General Medicine
+1335,Orthopedic,Orthopedic
+254,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+634,General Medicine,General Medicine
+2008,Surgery,Surgery
+192,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1327,Orthopedic,Orthopedic
+2470,Surgery,Surgery
+1456,Orthopedic,Orthopedic
+610,General Medicine,General Medicine
+1867,Surgery,Surgery
+1274,Orthopedic,Orthopedic
+624,General Medicine,General Medicine
+1,Cardiovascular-Pulmonary,General Medicine
+1894,Surgery,Surgery
+163,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2322,Surgery,Surgery
+2001,Surgery,Surgery
+2622,Surgery,Surgery
+162,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+201,Cardiovascular-Pulmonary,General Medicine
+1218,Orthopedic,Orthopedic
+721,Surgery,Surgery
+534,General Medicine,General Medicine
+1997,Surgery,Surgery
+20,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+827,Neurology,Neurology
+808,Neurology,Neurology
+1182,Ophthalmology,Ophthalmology
+1910,Surgery,Surgery
+2058,Surgery,Surgery
+1527,Psychiatry-Psychology,Psychiatry-Psychology
+2027,Surgery,Surgery
+536,General Medicine,General Medicine
+1068,Obstetrics-Gynecology,Obstetrics-Gynecology
+847,Neurology,Neurology
+1623,Radiology,Radiology
+701,General Medicine,General Medicine
+2297,Surgery,Surgery
+1760,Radiology,Radiology
+814,Neurology,General Medicine
+346,Gastroenterology,Gastroenterology
+121,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2021,Surgery,Surgery
+758,Neurology,Neurology
+1285,Orthopedic,Orthopedic
+1430,Orthopedic,Orthopedic
+841,Neurology,Neurology
+1260,Orthopedic,Orthopedic
+1750,Radiology,Radiology
+2015,Surgery,Surgery
+2482,Surgery,Surgery
+1141,Obstetrics-Gynecology,Obstetrics-Gynecology
+1454,Orthopedic,Orthopedic
+2448,Surgery,Surgery
+1025,Obstetrics-Gynecology,General Medicine
+1495,Orthopedic,Orthopedic
+14,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2061,Surgery,Surgery
+2313,Surgery,Surgery
+1980,Surgery,Surgery
+1471,Orthopedic,Orthopedic
+580,General Medicine,General Medicine
+2406,Surgery,Surgery
+862,Neurology,Neurology
+697,General Medicine,General Medicine
+1602,Radiology,Radiology
+2515,Surgery,Surgery
+1019,Obstetrics-Gynecology,Obstetrics-Gynecology
+622,General Medicine,General Medicine
+2625,Surgery,Surgery
+2116,Surgery,Surgery
+1675,Radiology,Radiology
+2019,Surgery,Surgery
+1409,Orthopedic,Orthopedic
+1053,Obstetrics-Gynecology,Obstetrics-Gynecology
+1293,Orthopedic,Surgery
+652,General Medicine,General Medicine
+2054,Surgery,Surgery
+1457,Orthopedic,Orthopedic
+779,Neurology,Neurology
+333,Gastroenterology,Gastroenterology
+1507,Psychiatry-Psychology,General Medicine
+2498,Surgery,Surgery
+424,Gastroenterology,Gastroenterology
+2447,Surgery,Surgery
+1027,Obstetrics-Gynecology,Obstetrics-Gynecology
+229,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+824,Neurology,Neurology
+1514,Psychiatry-Psychology,Psychiatry-Psychology
+2065,Surgery,Surgery
+999,Neurosurgery,Neurosurgery
+2600,Surgery,Surgery
+1570,Radiology,Radiology
+1749,Radiology,Radiology
+1445,Orthopedic,Orthopedic
+1166,Ophthalmology,Ophthalmology
+2176,Surgery,Surgery
+2500,Surgery,Surgery
+87,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1020,Obstetrics-Gynecology,General Medicine
+587,General Medicine,General Medicine
+992,Neurosurgery,Neurosurgery
+2002,Surgery,Surgery
+811,Neurology,Neurology
+1389,Orthopedic,Orthopedic
+2392,Surgery,Surgery
+2621,Surgery,Surgery
+726,General Medicine,General Medicine
+1538,Psychiatry-Psychology,Psychiatry-Psychology
+1089,Surgery,Surgery
+1289,Orthopedic,Orthopedic
+920,Neurosurgery,Neurosurgery
+472,Gastroenterology,Gastroenterology
+1158,Ophthalmology,Ophthalmology
+1898,Surgery,Surgery
+1142,Obstetrics-Gynecology,Obstetrics-Gynecology
+971,Neurosurgery,Neurosurgery
+969,Neurosurgery,Neurosurgery
+1261,Orthopedic,Orthopedic
+1729,Radiology,Neurology
+259,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1133,Obstetrics-Gynecology,Obstetrics-Gynecology
+1365,Orthopedic,Orthopedic
+1635,Radiology,Radiology
+1107,Obstetrics-Gynecology,Obstetrics-Gynecology
+171,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1003,Neurosurgery,Neurosurgery
+1017,Obstetrics-Gynecology,Obstetrics-Gynecology
+1739,Radiology,Radiology
+490,Gastroenterology,Gastroenterology
+1042,Obstetrics-Gynecology,Obstetrics-Gynecology
+1074,Obstetrics-Gynecology,Obstetrics-Gynecology
+2275,Surgery,Surgery
+48,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+54,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1579,Radiology,Radiology
+2605,Surgery,Surgery
+871,Neurology,Neurology
+1633,Radiology,Radiology
+2412,Surgery,Surgery
+2309,Surgery,Surgery
+207,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+741,Neurology,Neurology
+450,Gastroenterology,Gastroenterology
+1857,Surgery,Surgery
+1402,Orthopedic,Orthopedic
+1080,Obstetrics-Gynecology,Psychiatry-Psychology
+2130,Surgery,Surgery
+2039,Surgery,Surgery
+387,Gastroenterology,Gastroenterology
+2205,Surgery,Surgery
+1779,Surgery,Surgery
+1266,Orthopedic,Orthopedic
+299,Dermatology,General Medicine
+663,General Medicine,General Medicine
+2489,Surgery,Surgery
+1689,Radiology,Radiology
+1873,Surgery,Surgery
+1618,Radiology,Radiology
+1204,Ophthalmology,Ophthalmology
+1838,Surgery,Surgery
+1441,Orthopedic,Orthopedic
+2049,Surgery,Surgery
+927,Neurosurgery,Neurosurgery
+434,Gastroenterology,Gastroenterology
+1294,Orthopedic,Ophthalmology
+2180,Surgery,Surgery
+245,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+595,General Medicine,General Medicine
+1470,Orthopedic,Orthopedic
+1580,Radiology,Radiology
+1974,Surgery,Surgery
+1740,Radiology,Radiology
+2460,Surgery,Surgery
+94,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+481,Gastroenterology,General Medicine
+1372,Orthopedic,Orthopedic
+378,Gastroenterology,Gastroenterology
+2346,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2615,Surgery,Surgery
+530,General Medicine,General Medicine
+149,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2093,Cardiovascular-Pulmonary,Surgery
+58,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+524,General Medicine,General Medicine
+106,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+1851,Surgery,Surgery
+1993,Surgery,Surgery
+2441,Surgery,Surgery
+2135,Surgery,Surgery
+1000,Neurosurgery,Neurology
+711,General Medicine,General Medicine
+2286,Surgery,Surgery
+2121,Surgery,Surgery
+2347,Cardiovascular-Pulmonary,General Medicine
+1179,Ophthalmology,Ophthalmology
+1841,Surgery,Surgery
+356,Gastroenterology,General Medicine
+2475,Surgery,Surgery
+698,General Medicine,General Medicine
+1810,Surgery,Surgery
+2141,Surgery,Surgery
+363,Gastroenterology,General Medicine
+1395,Orthopedic,Orthopedic
+99,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2085,Surgery,Surgery
+1114,Obstetrics-Gynecology,Obstetrics-Gynecology
+1884,Surgery,Surgery
+130,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2461,Surgery,Surgery
+1288,Orthopedic,Orthopedic
+1258,Orthopedic,Orthopedic
+190,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2150,Surgery,Surgery
+340,Gastroenterology,Gastroenterology
+494,Gastroenterology,Gastroenterology
+219,Cardiovascular-Pulmonary,General Medicine
+1772,Surgery,Obstetrics-Gynecology
+2577,Surgery,Surgery
+1567,Radiology,Radiology
+1215,Orthopedic,Orthopedic
+2576,Surgery,Surgery
+1319,Orthopedic,Orthopedic
+2410,Surgery,Surgery
+1786,Surgery,Surgery
+1530,Psychiatry-Psychology,Psychiatry-Psychology
+1175,Ophthalmology,Ophthalmology
+1896,Surgery,Surgery
+1358,Orthopedic,Orthopedic
+1761,Surgery,Surgery
+2119,Surgery,Surgery
+2184,Surgery,Surgery
+352,Gastroenterology,General Medicine
+2068,Surgery,Surgery
+1326,Orthopedic,Orthopedic
+1634,Radiology,Radiology
+520,General Medicine,General Medicine
+1099,Obstetrics-Gynecology,Obstetrics-Gynecology
+1976,Surgery,Surgery
+1148,Ophthalmology,Ophthalmology
+1835,Surgery,Surgery
+1040,Obstetrics-Gynecology,Obstetrics-Gynecology
+732,Neurology,Neurology
+2272,Surgery,Surgery
+377,Gastroenterology,Gastroenterology
+1451,Orthopedic,Orthopedic
+337,Gastroenterology,Gastroenterology
+1016,Obstetrics-Gynecology,Obstetrics-Gynecology
+891,Neurology,Neurology
+1837,Surgery,Surgery
+2276,Surgery,Surgery
+1844,Surgery,Surgery
+1176,Ophthalmology,Orthopedic
+2530,Surgery,Surgery
+278,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+283,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+716,Ophthalmology,Ophthalmology
+1575,Radiology,Radiology
+1854,Surgery,Surgery
+662,General Medicine,General Medicine
+1958,Surgery,Surgery
+563,General Medicine,General Medicine
+1632,Radiology,Radiology
+597,General Medicine,General Medicine
+1065,Obstetrics-Gynecology,Obstetrics-Gynecology
+2046,Surgery,Surgery
+1092,Surgery,Surgery
+134,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+203,Cardiovascular-Pulmonary,Orthopedic
+547,General Medicine,General Medicine
+902,Neurology,Neurology
+1385,Orthopedic,Orthopedic
+2382,Surgery,Surgery
+2405,Surgery,Surgery
+2060,Surgery,Surgery
+2435,Surgery,Surgery
+88,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2113,Surgery,Surgery
+1436,Orthopedic,Orthopedic
+2069,Surgery,Surgery
+1203,Ophthalmology,Ophthalmology
+2164,Surgery,Surgery
+1446,Orthopedic,Orthopedic
+1742,Radiology,Radiology
+2525,Surgery,Surgery
+105,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+495,Gastroenterology,Gastroenterology
+475,Gastroenterology,Gastroenterology
+801,Neurology,Neurology
+781,Neurology,Neurology
+573,General Medicine,General Medicine
+795,Neurology,Neurology
+1044,Obstetrics-Gynecology,General Medicine
+265,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+539,General Medicine,General Medicine
+1462,Orthopedic,Orthopedic
+1404,Orthopedic,Orthopedic
+1129,Obstetrics-Gynecology,Obstetrics-Gynecology
+21,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+71,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2012,Surgery,Surgery
+2352,Surgery,Surgery
+628,General Medicine,General Medicine
+2640,Surgery,Surgery
+2312,Surgery,Surgery
+1775,Surgery,Surgery
+548,General Medicine,General Medicine
+2124,Surgery,Surgery
+406,Gastroenterology,Gastroenterology
+1988,Surgery,Surgery
+994,Neurosurgery,Neurosurgery
+1433,Orthopedic,Orthopedic
+313,Dermatology,Dermatology
+2508,Surgery,Surgery
+883,Neurology,Neurology
+1917,Surgery,Surgery
+2464,Surgery,Surgery
+1614,Radiology,Radiology
+1368,Orthopedic,Orthopedic
+380,Gastroenterology,Gastroenterology
+1765,Surgery,Surgery
+886,Neurology,General Medicine
+928,Neurosurgery,Neurosurgery
+1299,Orthopedic,Orthopedic
+53,Cardiovascular-Pulmonary,Cardiovascular-Pulmonary
+2284,Surgery,Surgery
+776,Neurology,General Medicine
+655,General Medicine,General Medicine
+1622,Radiology,General Medicine

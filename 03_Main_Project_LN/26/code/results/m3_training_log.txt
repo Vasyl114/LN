@@ -1,0 +1,92 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+============================================================
+MODEL 3 — Bio_ClinicalBERT fine-tuned on the description
+============================================================
+  torch 2.14.1+cpu | transformers 5.19.0 | threads 4
+  Training file : train_augmented.csv -> 5114 records (held-out records removed)
+  Evaluating on : 534 held-out original records
+  Config        : {"revision": "d5892b39a4adaed74b92212a44081509db72f87b", "input": "description", "max_length": 128, "learning_rate": 3e-05, "batch_size": 16, "epochs": 3, "warmup_ratio": 0.1, "weight_decay": 0.01, "bucket_batches": 50, "threads": 4, "seed": 42}
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4570.48it/s]
+[transformers] [1mBertForSequenceClassification LOAD REPORT[0m from: emilyalsentzer/Bio_ClinicalBERT
+Key                                        | Status     | 
+-------------------------------------------+------------+-
+cls.predictions.bias                       | UNEXPECTED | 
+cls.seq_relationship.weight                | UNEXPECTED | 
+cls.predictions.transform.dense.bias       | UNEXPECTED | 
+cls.predictions.transform.LayerNorm.bias   | UNEXPECTED | 
+cls.predictions.decoder.weight             | UNEXPECTED | 
+cls.predictions.transform.LayerNorm.weight | UNEXPECTED | 
+cls.seq_relationship.bias                  | UNEXPECTED | 
+cls.predictions.transform.dense.weight     | UNEXPECTED | 
+classifier.weight                          | MISSING    | 
+classifier.bias                            | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+  Tokens per description: median 31, max 128
+
+  epoch 1 step 50/320 loss 2.4970 (207s)
+  epoch 1 step 100/320 loss 2.4059 (414s)
+  epoch 1 step 150/320 loss 2.1755 (572s)
+  epoch 1 step 200/320 loss 1.9417 (739s)
+  epoch 1 step 250/320 loss 1.7540 (885s)
+  epoch 1 step 300/320 loss 1.5965 (1027s)
+  epoch 1 step 320/320 loss 1.5477 (1084s)
+  >> epoch 1: 1084s | held-out L0 accuracy 53.4% macro-F1 56.8% | L1 accuracy 73.6% (logged only, not used to choose the epoch)
+
+  epoch 2 step 50/320 loss 0.7160 (171s)
+  epoch 2 step 100/320 loss 0.6929 (314s)
+  epoch 2 step 150/320 loss 0.6558 (466s)
+  epoch 2 step 200/320 loss 0.6526 (611s)
+  epoch 2 step 250/320 loss 0.6457 (775s)
+  epoch 2 step 300/320 loss 0.6416 (921s)
+  epoch 2 step 320/320 loss 0.6376 (990s)
+  >> epoch 2: 990s | held-out L0 accuracy 50.2% macro-F1 51.8% | L1 accuracy 74.2% (logged only, not used to choose the epoch)
+
+  epoch 3 step 50/320 loss 0.5419 (156s)
+  epoch 3 step 100/320 loss 0.5169 (321s)
+  epoch 3 step 150/320 loss 0.4945 (459s)
+  epoch 3 step 200/320 loss 0.4918 (594s)
+  epoch 3 step 250/320 loss 0.4905 (746s)
+  epoch 3 step 300/320 loss 0.4935 (914s)
+  epoch 3 step 320/320 loss 0.4924 (969s)
+  >> epoch 3: 969s | held-out L0 accuracy 48.9% macro-F1 51.0% | L1 accuracy 75.7% (logged only, not used to choose the epoch)
+
+  [m3_L0]
+    Accuracy              : 48.88%
+    Macro F1              : 51.01%
+    Lowest class F1       : 20.78% (Radiology)
+    Classes with F1 < 25%  : 1 of 12
+    Classes never predicted: 0 of 12
+    Always answering 'Surgery': 33.52% (reference)
+    Automatic evaluation (measured on held-out): accuracy > 49% NO | no class F1 < 25% NO
+                          precision    recall  f1-score   support
+
+Cardiovascular-Pulmonary      0.780     0.742     0.760        62
+             Dermatology      1.000     0.400     0.571         5
+        Gastroenterology      0.723     0.872     0.791        39
+        General Medicine      0.714     0.714     0.714        42
+               Neurology      0.657     0.622     0.639        37
+            Neurosurgery      0.577     0.938     0.714        16
+   Obstetrics-Gynecology      0.800     0.889     0.842        27
+           Ophthalmology      0.700     0.933     0.800        15
+              Orthopedic      0.648     0.767     0.702        60
+   Psychiatry-Psychology      0.667     1.000     0.800         8
+               Radiology      0.744     0.659     0.699        44
+                 Surgery      0.881     0.743     0.806       179
+
+                accuracy                          0.757       534
+               macro avg      0.741     0.773     0.737       534
+            weighted avg      0.771     0.757     0.757       534
+
+  [m3_L1]
+    Accuracy              : 75.66%
+    Macro F1              : 73.66%
+    Lowest class F1       : 57.14% (Dermatology)
+    Classes with F1 < 25%  : 0 of 12
+    Classes never predicted: 0 of 12
+    Always answering 'Surgery': 33.52% (reference)
+    Automatic evaluation (measured on held-out): accuracy > 49% YES | no class F1 < 25% YES
+M3 finished with exit code 0
