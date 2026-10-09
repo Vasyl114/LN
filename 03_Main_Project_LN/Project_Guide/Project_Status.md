@@ -1,6 +1,6 @@
 # Project Status — Group 26 (NLP "Help the Doctor")
 
-> Hand-over document: what the project is, how the files are organised, what has been built, the numbers so far, where work stopped, and what is left. Written on **2026-10-08**. Deadline: **2026-10-16, 23:59** (Fenix, `26.zip`).
+> Hand-over document: what the project is, how the files are organised, what has been built, the numbers so far, where work stopped, and what is left. Written on **2026-10-08**, updated on **2026-10-09** (clean test file, `results.txt` generated). Deadline: **2026-10-16, 23:59** (Fenix, `26.zip`).
 
 ---
 
@@ -10,6 +10,7 @@
 - **Deliverables:** `26.zip` containing `26.pdf` (max 3 pages, template-based), `results.txt` (one label per line, no header, same order as the test file) and the code (no model weights).
 - **Grading:** 4 points automatic (accuracy above 49% **and** no class F1 below 25% on the hidden test labels) + 16 points for the paper. Section scores are in `Report_Plan.md`.
 - **Our research question:** *does a clinical language model fine-tuned only on the short description beat a classical classifier that reads all the text?*
+- **New on 2026-10-09:** the teachers published a **clean test set** (398 records, one per line, no header) to be used for `results.txt`, and confirmed we may train on the **entire** training dataset. The old test file was deleted from the repo. The 49% in the statement is only the threshold for the 2 automatic points, not a number we must reproduce.
 - **Rule reminders:** the test file is only for generating `results.txt`; the given files in `StudentsPack/` are never modified; LLM use must be declared in the paper; 3 points are lost if any instruction is not followed.
 
 ---
@@ -22,7 +23,7 @@
 │   ├── Project-2026-Description.pdf   task statement, rules, grading
 │   ├── Project-Template(.zip / -extracted/)   LaTeX template (template.tex) + biblio.bib
 │   ├── train.csv                  2,616 parsed rows, ';'-separated (7 corrupted rows, see §4)
-│   └── test_no_labels.csv         409 records, NO header row, NO labels
+│   └── test_no_labels.csv         CLEAN version (2026-10-09): 398 records, 1 per line, NO header, NO labels
 │
 ├── Project_Guide/                 Our documentation
 │   ├── 01_project_overview_and_plan.md   digest of the PDF/template/CSVs (Section 9 = verified facts)
@@ -34,9 +35,10 @@
 │
 ├── 26/                            OUR WORK STATION = what becomes 26.zip
 │   ├── 26.tex, biblio.bib         the paper (see §7)
+│   ├── results.txt                398 predicted labels for the clean test file (made by script 08)
 │   ├── figures/                   fig1_class_distribution.png, fig2_text_lengths.png (made by script 02)
 │   └── code/
-│       ├── data_utils.py          SHARED: load_train() repair, split_train_heldout(), remove_heldout(),
+│       ├── data_utils.py          SHARED: load_train() repair, load_test(), split_train_heldout(), remove_heldout(),
 │       │                          note_key(), seen_labels(), copy_aware_scores(), first_keyword_label()
 │       ├── evaluation.py          SHARED: summarize() = the one evaluation used by every model
 │       ├── model_utils.py         SHARED: the classical pipeline (TF-IDF + linear SVM) used by 04 and 07
@@ -47,6 +49,7 @@
 │       ├── 05_model_bert.py       Model 3: Bio_ClinicalBERT fine-tuned on the description (~50 min CPU)
 │       ├── 06_model_bert_embeddings.py  Model 4 (OPTIONAL, NOT RUN): frozen BERT on the full note (~1 h CPU)
 │       ├── 07_final_system.py     Model 5: layers L0/L1/L2 + fusion + the summary table
+│       ├── 08_generate_results.py writes ../results.txt (Model 2 at L2, trained on ALL training data)
 │       ├── train_augmented.csv    5,648 records (2,669 original + 2,979 generated)
 │       ├── train_clean.csv        the repaired train.csv, ONLY for inspection (no script reads it)
 │       ├── requirements.txt       pinned library versions
@@ -71,6 +74,7 @@ From `26/code/` (Python 3.10, CPU only; versions in `requirements.txt`; PyTorch 
 | 4 | `python3 04_model_classical.py` | ~1 min | `results/m2_*`, `m2_heldout_scores.npy` |
 | 5 | `python3 05_model_bert.py` (`--smoke` = 2-min check) | ~50 min | `results/m3_*`, `m3_heldout_scores.npy` |
 | 6 | `python3 07_final_system.py` | ~2 min | `results/m5_*`, `summary_table.csv` |
+| 7 | `python3 08_generate_results.py [--layer L0/L1/L2]` | ~10 s | `../results.txt` (398 lines) |
 | opt. | `python3 06_model_bert_embeddings.py` | ~1 h | `results/m4_*` |
 
 - Every script is seeded (42). Scripts 02, 03, 04 and the smoke test of 05 were re-run and gave identical outputs. The full run of 05 was run once.
@@ -81,7 +85,7 @@ From `26/code/` (Python 3.10, CPU only; versions in `requirements.txt`; PyTorch 
 
 ## 4. Key design decisions (and why)
 
-1. **Data repair in memory, files untouched.** 7 rows of `train.csv` have a `description` cell that swallowed the following records (3 are cut at 32,759 characters). `load_train()` splits them back: 2,616 parsed rows → **2,669 records**. Treated as realistic scraping noise; `test_no_labels.csv` has 4 such records too (not yet handled, see §8).
+1. **Data repair in memory, files untouched.** 7 rows of `train.csv` have a `description` cell that swallowed the following records (3 are cut at 32,759 characters). `load_train()` splits them back: 2,616 parsed rows → **2,669 records**. Treated as realistic scraping noise; The old test file had 4 such records; the teachers removed them in the clean version.
 2. **One fixed split.** 80% train (2,135) / 20% held out (534), stratified, seed 42, defined once in `data_utils.split_train_heldout()` and used by every script. Held-out records are never trained on and never used as an augmentation source. Nothing is tuned on the held-out set; hyperparameters are chosen by 5-fold CV inside the training portion (Model 2) or fixed in advance from the literature (Model 3).
 3. **Augmentation** (`03`): 15 variants inspired by EDA (curated synonym map, guarded WordNet, deletions, swaps, abbreviation expansion, etc.), generated only from training records, until every class has 400. Protected: upper-case abbreviations, numbers/dosages, spinal levels, laterality and negation words. The first keyword (the specialty) always stays first. Result: ratio largest:smallest class 36:1 → 2:1.
 4. **Models and why** (full reasoning is in the script headers):
@@ -130,7 +134,7 @@ Dataset facts used in the paper: 731 distinct notes (1,530 records, 58% of those
 **Not done**
 - [ ] `Models_Rationale.md` (short "why this over that" per model; the same reasoning is already in the script headers).
 - [ ] Model 4 (script written, never run; optional).
-- [ ] **`results.txt` generator** (`08_...`): loader for the test file, retrain the chosen system on all 2,669 records + augmentation, predict.
+- [x] **`results.txt`** generated by `08_generate_results.py`: Model 2 at L2 (SVM + first-keyword feature + copy-aware decoding), trained on all 2,669 records + the generated ones, 398 lines, deterministic (identical on rerun); predictions agree with the first keyword in 320/320 records that have one. Use `--layer L1` or `L0` to regenerate without the keywords / copy-aware step if the teachers object. The BERT fusion is NOT used (it would need the 50-minute fine-tune to reproduce).
 - [ ] Confusion matrix figure (abbreviated labels) and a script that lists misclassified held-out examples (needed for the Discussion).
 - [ ] Paper sections: Models, Experimental Setup (+ 4.1 hyperparameter table), Results (model table, per-class table, confusion matrix), Discussion, Future Work, LLM-use declaration, missing references (PyTorch etc.).
 - [ ] Final packaging: compile `26.pdf` (max 3 pages), run all scripts from clean, build `26.zip` (no weights).
@@ -148,16 +152,16 @@ Template headings kept exactly. Written: Introduction (research question stated)
 1. **Teachers' opinion** on the two shortcuts (keywords field, copy-aware decoding). Draft email: ask whether using the first keyword as an input feature is acceptable, state the two properties found, promise results with and without it. Send to `meic-ln@disciplinas.tecnico.ulisboa.pt`, subject "Project". If the answer is no: submit L1 without keywords (about 78–79% held-out).
 2. **Which system generates `results.txt`:** M2 SVM only (93.3%, reproducible in minutes) or Fusion (94.8%, needs the 50-minute BERT fine-tune to reproduce). We cannot ship weights.
 3. **Without any shortcut** the best model alone is M3 at 48.9% (just under 49%; lowest class F1 20.8%), so the automatic points would be borderline.
-4. **Test-file alignment:** the file has 409 parsed records but 452 physical lines (4 corrupted records). The statement says "same line number"; which counting the grader uses is unknown. Also ask the teachers.
-5. **Unexplained gap:** our baseline scores 38.8% on held-out while the statement implies about 49% on the test set. Cause unknown (cannot be checked without test labels).
-6. **Risk to disclose:** copy-aware decoding assumes test notes behave like held-out notes (240 of 398 non-empty test notes also occur in train).
+4. ~~Test-file alignment~~ — **solved** by the clean test file (398 records = 398 lines).
+5. ~~Baseline 38.8% vs 49%~~ — not a concern: 49% is only the threshold for the 2 automatic points.
+6. **Risk to disclose:** copy-aware decoding assumes test notes behave like held-out notes (242 of the 396 non-empty test notes also occur in train).
 7. **Model 4:** run (about 1 hour) or skip.
 
 ---
 
 ## 9. Gotchas
 
-- Both CSVs are `;`-separated with `"` quoting. `test_no_labels.csv` has **no header**: read it with `header=None` (the default drops the first record and gives 408).
+- Both CSVs are `;`-separated with `"` quoting. The clean `test_no_labels.csv` has **no header**: use `data_utils.load_test()` (it reads with `header=None`; the default would drop the first record).
 - Scripts must be run from `26/code/` (relative paths).
 - `train_clean.csv` is only a viewing aid (run `python3 data_utils.py` to regenerate it). Nothing depends on it.
 - `__pycache__` and `.pyc` files were committed once by mistake; consider a `.gitignore` (`__pycache__/`, `*.pyc`). The `results/` folder is small enough to commit (the `.npy` score files are needed by script 07).
@@ -168,8 +172,8 @@ Template headings kept exactly. Written: Introduction (research question stated)
 
 ## 10. Suggested next steps (in order)
 
-1. Send the email to the teachers (§8.1, §8.4).
-2. Write the `results.txt` generator, the confusion matrix and the error-example script.
-3. Write `Models_Rationale.md`, then the Models, Experimental Setup and Results sections.
-4. Pick 3 misclassified examples, write Discussion and Future Work, add the LLM-use declaration and missing references.
-5. Compile, check 3 pages, clean run of all scripts, build `26.zip`, submit before **October 16, 23:59**.
+1. Send the email to the teachers (§8.1): keywords field and copy-aware decoding. If the answer is no, run `08_generate_results.py --layer L1` (or `L0`).
+2. Write the confusion matrix and the error-example script; write `Models_Rationale.md`.
+3. Write the Models, Experimental Setup and Results sections of the paper, then Discussion, Future Work, the LLM-use declaration and missing references.
+4. Decide on Model 4 (optional) and on the BERT fusion for the final system (§8.2).
+5. Compile, check 3 pages, clean run of all scripts, build `26.zip` (`26.pdf`, `results.txt`, `code/`), submit before **October 16, 23:59**.

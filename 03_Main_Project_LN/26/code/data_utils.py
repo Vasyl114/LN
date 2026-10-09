@@ -42,6 +42,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 TRAIN_PATH   = '../../StudentsPack/train.csv'
+TEST_PATH    = '../../StudentsPack/test_no_labels.csv'   # clean test set published by the teachers (2026-10-09)
 RANDOM_SEED  = 42
 HELDOUT_SIZE = 0.20   # Share of the original records kept aside for evaluation
 
@@ -141,6 +142,22 @@ def load_train(path=TRAIN_PATH, verbose=False):
         print(f"  Records after repair              : {len(df)}")
 
     return df
+
+
+def load_test(path=TEST_PATH):
+    """
+    Load the clean test file: 4 columns (description, sample_name, transcription,
+    keywords), NO header row and NO label. Returns one row per line of the file,
+    in file order, so that row N is line N of results.txt.
+    Only for producing predictions; nothing may ever be trained on it.
+    """
+    test = pd.read_csv(path, sep=';', quotechar='"', engine='python', header=None,
+                       names=COLUMNS[1:])
+    with open(path, 'rb') as f:
+        data = f.read()
+    n_lines = data.count(b'\n') + (0 if data.endswith(b'\n') else 1)
+    assert len(test) == n_lines, f"{len(test)} records but {n_lines} lines: the file has multi-line records"
+    return test
 
 
 def split_train_heldout(df):

@@ -59,11 +59,13 @@ Kept out: dataset statistics (they belong to 2.1) and model details (Section 3).
 
 Kept out: any remedy (2.2) and any model consequence beyond a forward pointer.
 
-### 2.2 Data Augmentation — 2.0 pts — about 200 words — *written*
+### 2.2 Data Augmentation — 2.0 pts — about 200 words + Table 2 — *written*
 1. **Motivation**: one sentence linking back to the imbalance.
 2. **Strategy**: which transformations, on which fields, what is protected from change.
-3. **Procedure**: which classes, target size, seed, and that records are generated only from the training portion so the own test set stays untouched.
-4. **Outcome**: the "after" column of Table 1. The effect on performance is reported in Results.
+3. **Procedure**: which classes, target size, how the variants are assigned, and that records are generated only from training records (one pointer to Section 4, no split details).
+
+Kept out of 2.2: the split itself (percentages, sizes, seed, stratification). Those belong only to Section 4, subpart 1.
+4. **Outcome**: Table 2 (original, added and after counts). The effect on performance is reported in Results.
 
 ### 3 Models — 4.0 pts — about 360 words (largest text block) — *to do*
 0. **Design rationale** (one short paragraph): how the set of models maps onto the RQ.
@@ -83,18 +85,18 @@ Points: at least three models described (1.0), replicability (1.0), creativity (
 
 **4.1 Parameters/Hyperparameters**: one compact table, one row per hyperparameter with its value and a few-word explanation (the template asks that every hyperparameter mentioned is explained).
 
-### 5 Results — 1.5 pts — about 120 words + Table 2, Table 3, Figure 1 — *to do*
-1. **Overall comparison**: Table 2, one row per model, with and without augmentation.
-2. **Per-label results of the best model**: Table 3.
+### 5 Results — 1.5 pts — about 120 words + Table 3, Table 4, Figure 1 — *to do*
+1. **Overall comparison**: Table 3, one row per model, with and without augmentation.
+2. **Per-label results of the best model**: Table 4.
 3. **Confusion matrix** of one model: Figure 1 with abbreviated labels, plus one or two sentences reading it.
 4. **Submitted system**: one sentence naming the model used for `results.txt`.
 
 Kept out: every "because". Interpretation belongs to Discussion.
 
-### 6 Discussion — 3.0 pts — about 360 words + Table 4 — *to do*
-1. **Answer to the RQ**: direct, with numbers from Table 2.
+### 6 Discussion — 3.0 pts — about 360 words + Table 5 — *to do*
+1. **Answer to the RQ**: direct, with numbers from Table 3.
 2. **Most common errors**: the dominant confusions from Figure 1 and their cause, linked back to the observations of 2.1.
-3. **Three misclassified examples** from the own test set: Table 4 (text excerpt, correct label, predicted label) with an interpretation of each in the text.
+3. **Three misclassified examples** from the own test set: Table 5 (text excerpt, correct label, predicted label) with an interpretation of each in the text.
 4. **Effect of augmentation**: what changed for the small classes.
 5. **Limitations**: of the data (including labels the group disagrees with) and of the system.
 
@@ -115,22 +117,25 @@ Only material the paper can be understood without: the class distribution chart,
 
 | Float | Section | Content | Status |
 |---|---|---|---|
-| Table 1 | 2.1, reused by 2.2 | Class counts, %, and count after augmentation | done |
+| Table 1 | 2.1 | Records and % per specialty | done |
+| Table 2 | 2.2 | Records per specialty before, added and after augmentation | done |
 | Hyperparameter table | 4.1 | Value and short explanation per hyperparameter | to do |
-| Table 2 | 5 | Model comparison | to do |
-| Table 3 | 5 | Per-label results of the best model | to do |
+| Table 3 | 5 | Model comparison (layers L0 / L1 / L2) | to do |
+| Table 4 | 5 | Per-label results of the best model | to do |
 | Figure 1 | 5 | Confusion matrix | to do |
-| Table 4 | 6 | Three misclassified examples | to do |
+| Table 5 | 6 | Three misclassified examples | to do |
 
-The class distribution chart and the text length chart are in Appendix A, because Table 1 already carries the class numbers.
+Each table sits in the section that discusses it (Table 1 in 2.1, Table 2 in 2.2), so a table never appears before its own section heading. The research question is shown in a grey box at the end of the first paragraph of the Introduction.
+
+The class distribution chart and the text length chart are in Appendix A, because Tables 1 and 2 already carry the class numbers.
 
 ---
 
 ## 5. Page map (target)
 
-- **Page 1**: title and authors; Introduction; 2.1 with Table 1; 2.2.
-- **Page 2**: 3 Models; 4 Experimental Setup with the 4.1 table; start of 5 Results with Table 2.
-- **Page 3**: Table 3 and Figure 1; 6 Discussion with Table 4; 7 Future Work.
+- **Page 1**: title and authors; Introduction; start of 2.1 (Table 1 may land at the top of page 2).
+- **Page 2**: rest of 2.1 with Table 1; 2.2 with Table 2.
+- **Page 3 (currently empty headings)**: 3 Models; 4 Experimental Setup with the 4.1 table; 5 Results with Tables 3 and 4 and Figure 1; 6 Discussion with Table 5; 7 Future Work. These sections will not fit on one page: the body now ends on page 2, so the remaining budget is page 3 only, and the text of Models, Setup, Results and Discussion must be kept to the word caps above.
 - **After page 3**: Bibliography with the LLM statement; Appendix A.
 
 ---

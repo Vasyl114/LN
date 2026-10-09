@@ -9,7 +9,7 @@ These files are already in your [`StudentsPack/`](file:///home/duckycfx/Work/LN/
 | File | What it is | How you use it |
 |---|---|---|
 | [`train.csv`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/train.csv) | 2,613 medical transcription records with labels | Training and validation of all your models |
-| [`test_no_labels.csv`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/test_no_labels.csv) | 409 medical transcription records WITHOUT labels and without a header row (see `01`, Section 9.3) | Input for your best model to generate predictions |
+| [`test_no_labels.csv`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/test_no_labels.csv) | 398 medical transcription records WITHOUT labels and without a header row (clean version published by the teachers on 2026-10-09, see `01`, Section 9.3) | Input for your best model to generate predictions |
 | [`Project-2026-Description.pdf`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/Project-2026-Description.pdf) | Full project specification | Read it — it defines rules, grading, submission |
 | [`template.tex`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/Project-Template-extracted/Project-Template/template.tex) | LaTeX template for the paper | Fill it in — it defines the paper structure |
 | [`biblio.bib`](file:///home/duckycfx/Work/LN/03_Main_Project_LN/StudentsPack/Project-Template-extracted/Project-Template/biblio.bib) | BibTeX bibliography file | Add your references here |
@@ -123,7 +123,7 @@ What it must produce:
 
 What it must produce:
 - A file named exactly `results.txt`
-- 409 lines, one predicted label per line
+- 398 lines, one predicted label per line
 - No header line
 - Line N in `results.txt` corresponds to line N in `test_no_labels.csv`
 
@@ -167,7 +167,7 @@ Everything inside a ZIP file named **`26.zip`**, submitted via Fenix by **Octobe
 ```
 26.zip
 ├── 26.pdf              ← The short paper (max 3 pages, no cover page)
-├── results.txt         ← 409 lines of predictions for test_no_labels.csv
+├── results.txt         ← 398 lines of predictions for test_no_labels.csv
 └── code/               ← All your scripts (Python files or notebooks)
     ├── 01_data_analysis.py (or .ipynb)
     ├── 02_data_augmentation.py

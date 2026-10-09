@@ -7,6 +7,7 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{acronym}
+\usepackage{xcolor}
 
 % TITLE
 \title{Medical Specialty Classification from Clinical Notes: Does a Language Model Beat Classical Text Features?}
@@ -35,9 +36,11 @@
 \label{sec:intro}
 % ============================================================
 
-Routing a clinical document to the correct medical specialty supports triage and the organisation of electronic health records. The task is difficult because clinical notes are long, written in specialised language, and often relevant to more than one specialty.
+This report describes the development and comparison of natural language processing models that assign a clinical text to one of 12 medical specialties. Doing this automatically helps organise health records, but it may be harder than it sounds as these datasets come with several challenges such as class imbalance and the fact that the same note can be relevant to more than one specialty. The goal is to answer the following research question:
 
-\textbf{Research question.} Does a domain-specific language model, fine-tuned only on the short description of a clinical record, outperform a classical classifier trained on all the text available for that record? The answer is not obvious: the language model brings prior knowledge of clinical language but reads one or two sentences, whereas the classical model has no prior knowledge but reads the full note and its keywords.
+\medskip
+\noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep\relax}{\textbf{Does a domain-specific language model, fine-tuned only on the short description of a clinical record, outperform a classical classifier trained on all the text available for that record?}}}
+\medskip
 
 To answer it, we first analyse the data (Section~\ref{sec:analysis}) and reduce its class imbalance through augmentation (Section~\ref{sec:augmentation}). We then compare a baseline, a classical model and a clinical language model (Section~\ref{sec:models}) on a held-out portion of the training data (Section~\ref{sec:setup}), and examine their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
 
@@ -51,32 +54,32 @@ To answer it, we first analyse the data (Section~\ref{sec:analysis}) and reduce 
 
 \textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description} (one or two sentences), \texttt{sample\_name}, \texttt{transcription} (the full note) and \texttt{keywords}. The file, adapted from a public Kaggle dataset, parses into 2{,}616 rows, but in seven of them the description cell had absorbed the 56 records that followed it. We split these cells back in memory, which gives 2{,}669 records.
 
-\textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance: Surgery holds 893 records (33.5\%) and Dermatology 25 (0.9\%), a ratio of approximately 36:1, which biases classifiers towards the frequent classes~\cite{imbalance_survey}.
+\textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance: Surgery holds 893 records (33.5\%) and Dermatology 25 (0.9\%), a ratio of approximately 36:1, which biases classifiers towards the frequent classes~\cite{imbalance_survey} (Figure~\ref{fig:class_dist} in the Appendix shows the distribution as a chart).
 
-\begin{table}[h]
+\begin{table}[!ht]
 \centering
-\caption{Records per specialty in the training data, and in the training file after augmentation (Section~\ref{sec:augmentation}).}
+\caption{Records per specialty in the training data.}
 \label{tab:class_dist}
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lrrr}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrr}
 \toprule
-\textbf{Specialty} & \textbf{Records} & \textbf{\%} & \textbf{After} \\
+\textbf{Specialty} & \textbf{Records} & \textbf{\%} \\
 \midrule
-Surgery                  & 893 & 33.5 & 893 \\
-Cardiovascular-Pulmonary & 309 & 11.6 & 462 \\
-Orthopedic               & 300 & 11.2 & 460 \\
-Radiology                & 222 &  8.3 & 444 \\
-General Medicine         & 212 &  7.9 & 442 \\
-Gastroenterology         & 195 &  7.3 & 439 \\
-Neurology                & 184 &  6.9 & 437 \\
-Obstetrics-Gynecology    & 136 &  5.1 & 427 \\
-Neurosurgery             &  79 &  3.0 & 416 \\
-Ophthalmology            &  73 &  2.7 & 415 \\
-Psychiatry-Psychology    &  41 &  1.5 & 408 \\
-Dermatology              &  25 &  0.9 & 405 \\
+Surgery                  & 893 & 33.5 \\
+Cardiovascular-Pulmonary & 309 & 11.6 \\
+Orthopedic               & 300 & 11.2 \\
+Radiology                & 222 &  8.3 \\
+General Medicine         & 212 &  7.9 \\
+Gastroenterology         & 195 &  7.3 \\
+Neurology                & 184 &  6.9 \\
+Obstetrics-Gynecology    & 136 &  5.1 \\
+Neurosurgery             &  79 &  3.0 \\
+Ophthalmology            &  73 &  2.7 \\
+Psychiatry-Psychology    &  41 &  1.5 \\
+Dermatology              &  25 &  0.9 \\
 \midrule
-\textbf{Total}           & \textbf{2{,}669} & \textbf{100} & \textbf{5{,}648} \\
+\textbf{Total}           & \textbf{2{,}669} & \textbf{100} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -94,9 +97,37 @@ Descriptions average 18.9 words and transcriptions 457.0, from 275.3 (Radiology)
 
 \textbf{Strategy.} New records are derived from existing ones through 15 variants inspired by \ac{eda}~\cite{wei2019eda}, which combine: synonym replacement (a curated map of 28 clinical terms, then the most common WordNet~\cite{miller1995wordnet} sense for other words); deletion of 5--20\% of the words or of one or two sentences, in the transcription only; swapping of adjacent words; removal of filler words; expansion of seven unambiguous abbreviations (e.g., \emph{hx} $\rightarrow$ \emph{history}); lowercasing; and rewriting of isolated numbers as words. Keywords after the first one are subsampled (65--85\%) and shuffled; the first one, the specialty, stays in place. Synonym replacement and word deletion never touch upper-case abbreviations, numbers, dosages, spinal levels, hyphenated compounds, or laterality and negation words (e.g., \emph{left}, \emph{no}).
 
-\textbf{Procedure.} The data are split into a training portion (80\%, 2{,}135 records) and a held-out portion (20\%, 534 records), stratified by label (random seed 42). Records are generated only from the training portion. In pass $c$ over a class, record $r$ receives variant $(r + c) \bmod 15$, until the class has 400 training records; outputs identical to an existing record are discarded.
+\textbf{Procedure.} New records are generated only from training records, so that no record kept for evaluation leaks into the augmented data (the split is described in Section~\ref{sec:setup}). In pass $c$ over a class, record $r$ receives variant $(r + c) \bmod 15$, until the class reaches 400 records; outputs identical to an existing record are discarded. The file keeps all original records, so some totals in Table~\ref{tab:aug_dist} exceed 400.
 
-\textbf{Outcome.} This produced 2{,}979 records for 11 classes. The training file (original plus generated records, column ``After'' of Table~\ref{tab:class_dist}) has 5{,}648 records, and the ratio between the largest and the smallest class falls from approximately 36:1 to 2:1. The effect on classification is reported in Section~\ref{sec:results}.
+\textbf{Outcome.} This produced 2{,}979 records for 11 classes. Table~\ref{tab:aug_dist} shows the result: the training file (original plus generated records) has 5{,}648 records, and the ratio between the largest and the smallest class falls from approximately 36:1 to 2:1. The effect on classification is reported in Section~\ref{sec:results}.
+
+\begin{table}[!ht]
+\centering
+\caption{Records per specialty before and after augmentation.}
+\label{tab:aug_dist}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Specialty} & \textbf{Original} & \textbf{Added} & \textbf{After} \\
+\midrule
+Surgery                  & 893 &   0 & 893 \\
+Cardiovascular-Pulmonary & 309 & 153 & 462 \\
+Orthopedic               & 300 & 160 & 460 \\
+Radiology                & 222 & 222 & 444 \\
+General Medicine         & 212 & 230 & 442 \\
+Gastroenterology         & 195 & 244 & 439 \\
+Neurology                & 184 & 253 & 437 \\
+Obstetrics-Gynecology    & 136 & 291 & 427 \\
+Neurosurgery             &  79 & 337 & 416 \\
+Ophthalmology            &  73 & 342 & 415 \\
+Psychiatry-Psychology    &  41 & 367 & 408 \\
+Dermatology              &  25 & 380 & 405 \\
+\midrule
+\textbf{Total}           & \textbf{2{,}669} & \textbf{2{,}979} & \textbf{5{,}648} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ============================================================
 \section{Models}

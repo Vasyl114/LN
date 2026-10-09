@@ -463,13 +463,13 @@ Write this level of detail for at least 3 cases.
 
 💻 **CODE:** Create `26/code/04_generate_results.py`. This script must:
 1. Load the original `train.csv` and train your best model on **the entire training set** (all 2,613 rows — NOT just the 80% split, because you don't need to hold any data back anymore for validation)
-2. Load `test_no_labels.csv` (the 409 unlabelled rows from the professors). The file has **no header row**: load it with `header=None`, otherwise pandas consumes the first record as column names and returns 408 rows (see `01`, Section 9.3)
+2. Load `test_no_labels.csv` (the 398 unlabelled records of the clean test file). The file has **no header row**: load it with `header=None` (`data_utils.load_test()` does this)
 3. Apply the same preprocessing as your best model
-4. Run the model on those 409 rows
+4. Run the model on those 398 rows
 5. Output the predictions as a file named `results.txt` in the `26/` folder root
 
 **Format of `results.txt`:**
-- Exactly 409 lines
+- Exactly 398 lines
 - One label per line (just the label text, nothing else)
 - No header line
 - The label on line N corresponds to row N of `test_no_labels.csv`
@@ -486,13 +486,13 @@ Dermatology
 ```
 
 ▶️ **RUN** it. After it runs, check the file:
-- Count the lines: it must be exactly 409
+- Count the lines: it must be exactly 398
 - Check that every line is one of the 12 valid label names
 - Check that there are no empty lines
 
 🔴 **CRITICAL:** Never train on `test_no_labels.csv`. It is only ever used as input to your best trained model to generate predictions.
 
-✅ **STEP 4.3 DONE** when: `results.txt` exists, has exactly 409 lines, every line is a valid label name.
+✅ **STEP 4.3 DONE** when: `results.txt` exists, has exactly 398 lines, every line is a valid label name.
 
 ---
 ---
@@ -593,7 +593,7 @@ Work through the sections in this order. Each person writes their assigned secti
 **Write:**
 1. Which dataset was used for training (the augmented version)
 2. How you split it (80/20 stratified split, random_state=42)
-3. What the test set is (`test_no_labels.csv`, 409 samples, never used for training)
+3. What the test set is (`test_no_labels.csv`, 398 samples, never used for training)
 4. Which evaluation metrics you used and why (Accuracy, Macro-F1, Per-class F1; explain that Macro-F1 is more informative than Accuracy for imbalanced datasets)
 
 **Scoring focus:** 1.0 point. Must be complete enough to replicate.
@@ -706,8 +706,8 @@ After all sections have been drafted, all 4 members should read the complete pap
 ## STEP 6.1 — Final Verification of `results.txt`
 
 Before zipping:
-- Open `results.txt` and count the lines manually: must be exactly 409
-- Load `test_no_labels.csv` with `header=None` and confirm it also has 409 records (the file has 452 physical lines because 4 corrupted records span several lines — see `01`, Section 9.3)
+- Open `results.txt` and count the lines manually: must be exactly 398
+- Load `test_no_labels.csv` with `header=None` and confirm it also has 398 records (one per physical line)
 - Spot-check 5–10 lines: are the labels valid class names?
 - Confirm no header row, no empty lines, no extra spaces
 
@@ -728,7 +728,7 @@ The ZIP must contain:
 ```
 26.zip
 ├── 26.pdf             ← the compiled paper
-├── results.txt        ← 409 lines of predictions
+├── results.txt        ← 398 lines of predictions
 ├── biblio.bib         ← bibliography source file
 ├── 26.tex             ← LaTeX source file
 └── code/

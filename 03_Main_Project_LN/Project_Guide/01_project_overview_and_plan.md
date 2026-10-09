@@ -343,7 +343,9 @@ Both files use `;` as separator, `"` as quote character, CRLF line endings and U
 - In the 2,606 clean rows `transcription` is empty in 24 and `keywords` is empty in 396.
 - **How the code handles this:** `26/code/data_utils.py` (`load_train()`) leaves the given file untouched and repairs these rows in memory, splitting each corrupted cell back into its records and rejoining the three cut ones. The result is **2,669 records** (the 2,606 clean rows, the 7 corrupted rows reduced to their own description, and 56 recovered records), which is the dataset size used by the scripts and the paper. On those 2,669 records the first keyword equals the label in all 2,219 rows that have keywords, and 731 transcriptions appear under more than one label (1,530 rows).
 
-**`test_no_labels.csv`** — has **no header row** (its first line is already a record) and 4 columns.
+> **UPDATE 2026-10-09:** the teachers replaced the test file with a clean version ("exactly the same as the previous one, just cleaned up"). The new `test_no_labels.csv` has **398 records on 398 physical lines**, no header, 4 columns, no corrupted record. Eleven junk records of the old file were dropped (4 corrupted, their 4 cut-off tails, 1 empty, 2 with shifted columns); the other 398 are unchanged and in the same order. `results.txt` must have **398 lines**. The old file (deleted) is described below for the record; the teachers' stated reason is that each group repairs corrupted data differently, so a common clean test set keeps all submissions aligned. The keywords column is unchanged (326 of 398 records; 320 start with the specialty), and 242 of its 396 non-empty notes also occur in `train.csv`.
+
+**`test_no_labels.csv` (OLD version, historical)** — had **no header row** (its first line was already a record) and 4 columns.
 
 | Count | Meaning |
 |---|---|
@@ -356,7 +358,7 @@ Both files use `;` as separator, `"` as quote character, CRLF line endings and U
 - Empty fields over the 409 records: `description` 1, `sample_name` 9, `transcription` 11, `keywords` 83.
 
 > [!CAUTION]
-> **`results.txt` must be aligned with 409 records, not 408.** Every "408" in earlier versions of these guides came from reading the file with the default header, which drops the first record and shifts every prediction by one line. Because of the 4 corrupted records, "line number" is also ambiguous (409 parsed records versus 452 physical lines). 409 is the count a CSV parser gives; since the 4 automatic points depend on this alignment, it is worth confirming with the professors (contact in Section 9.1).
+> **(Historical, old test file) `results.txt` had to be aligned with 409 records, not 408.** Every "408" in earlier versions of these guides came from reading the file with the default header, which drops the first record and shifts every prediction by one line. Because of the 4 corrupted records, "line number" is also ambiguous (409 parsed records versus 452 physical lines). 409 is the count a CSV parser gives; since the 4 automatic points depend on this alignment, it is worth confirming with the professors (contact in Section 9.1).
 
 **Patterns in the 2,606 clean train rows**
 
