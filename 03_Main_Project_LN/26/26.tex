@@ -52,9 +52,9 @@ To answer it, we follow a phased approach. First, we analyse the data we were gi
 \subsection{Data Analysis}
 \label{sec:analysis}
 
-\textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} (the full note) and \texttt{keywords}. The file, adapted from a public Kaggle dataset, parses into 2{,}616 rows, but seven of them had absorbed the 56 records that followed; splitting these back in memory gives 2{,}669 records. Descriptions are short (19 words on average) and transcriptions long (457), see Figure~\ref{fig:text_lengths} in the Appendix.
+\textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} (the full note) and \texttt{keywords}. The file, adapted from a public Kaggle dataset~\cite{kaggle}, parses into 2{,}616 rows, but seven of them had absorbed the 56 records that followed; splitting these back in memory gives 2{,}669 records. Descriptions are short (19 words on average) and transcriptions long (457), see Figure~\ref{fig:text_lengths} in the Appendix.
 
-\textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance, from Surgery with 893 records to Dermatology with 25 (about 36:1), which biases classifiers towards the frequent classes~\cite{imbalance_survey} (Figure~\ref{fig:class_dist} in the Appendix).
+\textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance, from Surgery with 893 records to Dermatology with 25 (about 36:1), which biases classifiers towards the frequent classes~\cite{imbalance_survey}.
 
 \begin{table}[!ht]
 \centering
@@ -128,11 +128,11 @@ Dermatology              &  25 & 380 & 405 \\
 
 Our objective was to develop models step by step that beat the teachers' baseline, i.e., above 49\% accuracy and no per-class F1 below 25\%, while answering the research question.
 
-\textbf{M1.} The baseline itself, kept as the reference every change is measured against. It reads only the description, lowercased and stemmed, and counts words with \ac{tfidf} for a \ac{mnb}. It is trained with default settings and has no random component, so it reproduces exactly.
+\textbf{M1.} The baseline itself, kept as the reference every change is measured against. It reads only the description, lowercased and stemmed~\cite{nltk}, and counts words with \ac{tfidf} for a \ac{mnb}. It is trained with default settings and has no random component, so it reproduces exactly.
 
-\textbf{M2.} Drops the restriction to the description and reads every field, transcription and keywords included, since the question asks what a classical model can do with all the text; swaps \ac{mnb} for a linear \ac{svm}, which copes better with thousands of correlated word features. Words are weighted by \ac{tfidf}, the \ac{svm} learns one boundary per specialty, and class-balanced weights make the rare ones count more. It is the plain classical model, with no extra feature and no post-processing.
+\textbf{M2.} Drops the restriction to the description and reads every field, transcription and keywords included, since the question asks what a classical model can do with all the text; swaps \ac{mnb} for a linear \ac{svm}~\cite{sklearn}, which copes better with thousands of correlated word features. Words are weighted by \ac{tfidf}, the \ac{svm} learns one boundary per specialty, and class-balanced weights make the rare ones count more. It is the plain classical model, with no extra feature and no post-processing.
 
-\textbf{M3.} Goes back to little text, the description only, but swaps word counts for Bio\_ClinicalBERT~\cite{bioclinicalbert}, already pre-trained on clinical notes and able to extract more meaning from a short text. A linear layer is added and all weights are fine-tuned, since the encoder was never trained to separate specialties. The description is cut at 128 tokens, which affects almost none of them, and the model sees the augmented data for three epochs.
+\textbf{M3.} Goes back to little text, the description only, but swaps word counts for Bio\_ClinicalBERT~\cite{bioclinicalbert}, already pre-trained on clinical notes and able to extract more meaning from a short text. A linear layer is added and all weights are fine-tuned with PyTorch~\cite{pytorch} and Transformers~\cite{transformers}, since the encoder was never trained to separate specialties. The description is cut at 128 tokens, which affects almost none of them, and the model sees the augmented data for three epochs.
 
 \textbf{M4.} The best model: M3 plus the first keyword. That keyword is the specialty itself (Observation~2) and, unlike the text, it separates the copies of a note listed under several specialties (Observation~1). Its specialty is added to M3's standardised scores with a weight that no score gap can outvote, so the keyword decides when it exists and M3 decides when it does not. The weight is fixed in advance and M4 needs no training of its own, it reuses M3.
 
@@ -177,18 +177,67 @@ M4 keyword weight & 5 (fixed) & beats any score gap \\
 \label{sec:results}
 % ============================================================
 
+Table~\ref{tab:results} shows the held-out results (M1 trained on the original data, M2 to M4 on the augmented data); the last row applies the keyword rule of M4 to M2, for comparison. M4 is the best model, with 92.1\% accuracy and 89.6\% macro-F1, and meets both automatic conditions: accuracy above 49\% and no class F1 below 25\% (its lowest is 70.0\%, Psychiatry-Psychology). M3 alone reaches 48.9\%. Results by label are in Table~\ref{tab:perlabel} and the confusion matrix of M4 in Figure~\ref{fig:confusion}, both in Appendix A. Augmentation made no clear difference for M2: 87.6\% on the original data against 86.3\% on the augmented data, within the uncertainty of about 3 points of a 534-record test set. \texttt{results.txt} was produced by M4 trained on all the records; the given test file was used for nothing else.
+
+\begin{table}[!ht]
+\centering
+\caption{Held-out results (\%): accuracy, macro-F1 and lowest class F1.}
+\label{tab:results}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Model & Acc. & Macro-F1 & Min.\ F1 \\
+\midrule
+M1 baseline & 38.8 & 13.7 & 0.0 \\
+M2 classical, all fields & 86.3 & 81.5 & 50.0 \\
+M3 language model, description & 48.9 & 51.0 & 20.8 \\
+\textbf{M4 = M3 + first keyword} & \textbf{92.1} & \textbf{89.6} & \textbf{70.0} \\
+\midrule
+M2 + first keyword (comparison) & 89.1 & 87.2 & 75.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 % ============================================================
 \section{Discussion}
 \label{sec:discussion}
 % ============================================================
 
+\textbf{Research question.} With little text, the description and the first keyword, M4 outperforms M2, which reads every field: 92.1\% against 86.3\% accuracy and 89.6\% against 81.5\% macro-F1. The comparison does not isolate the language model, though. The same keyword rule applied to M2 gives 89.1\%, so the keyword explains most of the gap and the language model adds about 3 points, the size of the uncertainty of the test set. Without the keyword, M3 reaches only 48.9\%, because the description cannot separate specialties that share notes (Observation~1). The answer is therefore yes on this dataset, but mainly because one short field carries the label (Observation~2), not because the language model understands the text better.
+
+\textbf{Errors.} All 42 errors of M4 fall on the 94 held-out records without keywords, where M3 decides alone (55.3\% accuracy); 22 of the 42 are notes listed under more than one specialty (Observation~1). Table~\ref{tab:examples} shows three examples. In the first, the description lists generic symptoms (dizziness, cold sweats, shortness of breath), while the decisive cue, \emph{Pulmonary Embolism}, is in the sample name, which M3 never reads. In the second, the same note exists in the training data as Gastroenterology, and M3 reproduces that label instead of the General Medicine of this copy. In the third, the description is dominated by anxiety and depression, so the text points to a neighbouring specialty of the Neurology record.
+
+\begin{table}[!ht]
+\centering
+\caption{Misclassified held-out records (CV-Pulm = Cardiovascular-Pulmonary, GenMed = General Medicine, Gastro = Gastroenterology, Psych = Psychiatry-Psychology).}
+\label{tab:examples}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{4.0cm}@{\hspace{4pt}}l@{\hspace{4pt}}l@{}}
+\toprule
+Description (excerpt) & True & Predicted \\
+\midrule
+``Patient felt dizzy, had some cold sweats, mild shortness of breath, \ldots lost consciousness for a few seconds.'' & CV-Pulm & GenMed \\
+``Possible free air under the diaphragm. On a chest x-ray \ldots she was found to have what was thought to be free air \ldots'' & GenMed & Gastro \\
+``Falls at home. Anxiety and depression. The patient had been increasingly anxious \ldots'' & Neurology & Psych \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Limitations.} M4 depends on the first keyword being the specialty, which holds in all 2{,}219 training records that have keywords and in 320 of the 398 test records; it would not transfer to notes without keywords, where its accuracy falls to 55.3\%.
+
 % ============================================================
 \section{Future Work}
 % ============================================================
 
+With more time, we would give the language model the fields that the errors point to, the sample name and the start of the transcription, so that records without keywords are classified from more than the description. We would also treat the copies of a note as a multi-label problem, since the same text belongs to several specialties, and repeat the evaluation with cross-validation to reduce the uncertainty of a single 534-record test set.
+
 % ============================================================
 \section*{Bibliography}
 % ============================================================
+
+\textbf{Use of LLMs.} We used Claude (Anthropic), through Claude Code, as a coding and writing assistant: it helped write and debug the scripts, run the experiments, and draft and edit the text of this report. The group defined the research question, chose the models and design decisions, and checked all results and text.
 
 \bibliographystyle{apalike}
 \bibliography{biblio}
@@ -199,16 +248,42 @@ M4 keyword weight & 5 (fixed) & beats any score gap \\
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\linewidth]{figures/fig1_class_distribution.png}
-\caption{Class distribution of the training data (2{,}669 records).}
-\label{fig:class_dist}
-\end{figure}
-
-\begin{figure}[h]
-\centering
 \includegraphics[width=\linewidth]{figures/fig2_text_lengths.png}
 \caption{Average word count of the description and transcription fields per specialty.}
 \label{fig:text_lengths}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Results by label of M4 on the held-out records (\%).}
+\label{tab:perlabel}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Specialty & Prec. & Recall & F1 & Records \\
+\midrule
+Cardiovascular-Pulmonary & 94.6 & 85.5 & 89.8 & 62 \\
+Dermatology              & 100.0 & 80.0 & 88.9 & 5 \\
+Gastroenterology         & 92.5 & 94.9 & 93.7 & 39 \\
+General Medicine         & 76.1 & 83.3 & 79.5 & 42 \\
+Neurology                & 81.6 & 83.8 & 82.7 & 37 \\
+Neurosurgery             & 93.8 & 93.8 & 93.8 & 16 \\
+Obstetrics-Gynecology    & 96.3 & 96.3 & 96.3 & 27 \\
+Ophthalmology            & 93.8 & 100.0 & 96.8 & 15 \\
+Orthopedic               & 91.9 & 95.0 & 93.4 & 60 \\
+Psychiatry-Psychology    & 58.3 & 87.5 & 70.0 & 8 \\
+Radiology                & 97.5 & 88.6 & 92.9 & 44 \\
+Surgery                  & 97.7 & 96.6 & 97.2 & 179 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig3_confusion_matrix.png}
+\caption{Confusion matrix of M4 on the held-out records (rows: true label, columns: predicted label).}
+\label{fig:confusion}
 \end{figure}
 
 \end{document}

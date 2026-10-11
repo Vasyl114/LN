@@ -84,7 +84,7 @@ Points: at least three models described (1.0), replicability (1.0), creativity (
 
 **4.1 Parameters/Hyperparameters**: one compact table, one row per hyperparameter with its value and a few-word explanation (the template asks that every hyperparameter mentioned is explained).
 
-### 5 Results — 1.5 pts — about 120 words + Table 4, Table 5, Figure 1 — *to do*
+### 5 Results — 1.5 pts — about 120 words + Table 4, Table 5, Figure 1 — *written*
 1. **Overall comparison**: Table 4, one row per model (M1 to M4) plus the ablation row "M2 + first keyword" (accuracy, macro-F1, lowest class F1), numbers from `results/summary_table.csv`.
 2. **Per-label results of M4**: Table 5 (or one sentence if space is short).
 3. **Confusion matrix** of M4: Figure 1 with abbreviated labels, plus one or two sentences reading it.
@@ -92,7 +92,7 @@ Points: at least three models described (1.0), replicability (1.0), creativity (
 
 Kept out: every "because". Interpretation belongs to Discussion.
 
-### 6 Discussion — 3.0 pts — about 360 words + Table 6 — *to do*
+### 6 Discussion — 3.0 pts — about 360 words + Table 6 — *written*
 1. **Answer to the RQ**: direct, with numbers from Table 4.
 2. **Most common errors**: the dominant confusions from Figure 1 and their cause, linked back to the observations of 2.1.
 3. **Three misclassified examples** from the own test set: Table 6 (text excerpt, correct label, predicted label) with an interpretation of each in the text.
@@ -101,7 +101,7 @@ Kept out: every "because". Interpretation belongs to Discussion.
 
 Generic statements score zero here; every claim needs a number or a quoted example.
 
-### 7 Future Work — 0.5 pt — about 60 words — *to do*
+### 7 Future Work — 0.5 pt — about 60 words — *written*
 Two or three sentences, each tied to the RQ or to a limitation from Discussion subpart 5.
 
 ### Bibliography — 1.0 pt — outside the page limit — *partly done*
@@ -119,10 +119,10 @@ Only material the paper can be understood without: the class distribution chart,
 | Table 1 | 2.1 | Records and % per specialty | done |
 | Table 2 | 2.2 | Records per specialty before, added and after augmentation | done |
 | Table 3 | 4.1 | Hyperparameters: value and short explanation | done |
-| Table 4 | 5 | Model comparison M1 to M4 and the ablation row | to do |
-| Table 5 | 5 | Per-label results of M4 | to do |
-| Figure 1 | 5 | Confusion matrix | to do |
-| Table 6 | 6 | Three misclassified examples | to do |
+| Table 4 | 5 | Model comparison M1 to M4 and the comparison row | done |
+| Table 6 (appendix) | A | Per-label results of M4 | done |
+| Figure 2 (appendix) | A | Confusion matrix of M4 | done |
+| Table 5 | 6 | Three misclassified examples | done |
 
 Each table sits in the section that discusses it (Table 1 in 2.1, Table 2 in 2.2), so a table never appears before its own section heading. The research question is shown in a grey box at the end of the first paragraph of the Introduction.
 
