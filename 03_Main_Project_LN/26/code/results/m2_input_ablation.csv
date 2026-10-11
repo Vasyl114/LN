@@ -1,0 +1,11 @@
+fields,training_file,accuracy_%,macro_f1_%,lowest_class_f1_%
+D,original,32.21,27.52,12.5
+D,augmented,32.4,29.0,15.79
+DN,original,33.9,33.21,13.7
+DN,augmented,33.9,33.94,13.79
+DNK,original,88.76,84.03,33.33
+DNK,augmented,88.95,84.42,57.14
+DNT,original,38.01,37.08,14.93
+DNT,augmented,36.52,33.56,0.0
+DNTK,original,87.64,84.53,72.73
+DNTK,augmented,86.33,81.55,50.0

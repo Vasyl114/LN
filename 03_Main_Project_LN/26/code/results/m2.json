@@ -1,0 +1,38 @@
+{
+  "name": "m2",
+  "n_heldout": 534,
+  "accuracy": 0.8632958801498127,
+  "macro_f1": 0.8154888192507124,
+  "lowest_class_f1": 0.5,
+  "lowest_class": "Dermatology",
+  "classes_below_min_f1": 0,
+  "classes_never_predicted": 0,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.8571428571428571,
+    "Dermatology": 0.5,
+    "Gastroenterology": 0.8108108108108109,
+    "General Medicine": 0.7368421052631579,
+    "Neurology": 0.8055555555555556,
+    "Neurosurgery": 0.875,
+    "Obstetrics-Gynecology": 0.875,
+    "Ophthalmology": 0.875,
+    "Orthopedic": 0.8943089430894309,
+    "Psychiatry-Psychology": 0.75,
+    "Radiology": 0.8941176470588236,
+    "Surgery": 0.9120879120879121
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": true,
+    "no_class_f1_below_25": true
+  },
+  "config": {
+    "model": "TF-IDF + LinearSVC",
+    "fields": "DNTK",
+    "training_file": "augmented",
+    "ngram_range": "(1, 2)",
+    "min_df": "2",
+    "max_features": "150000",
+    "sublinear_tf": "True",
+    "C": "250.0"
+  }
+}

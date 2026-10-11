@@ -3,7 +3,7 @@
 
 > **Deadline:** October 16, 2026 at 23:59 via Fenix
 > **Submission:** `26.zip` containing `26.pdf`, `results.txt`, and `code/`
-> **What you already have:** The baseline model script at `26/code/01_baseline_model.py` ✅
+> **What you already have:** The baseline model script at `26/code/M1_baseline_model.py` ✅
 
 ---
 
@@ -36,7 +36,7 @@ This folder is what will become the `26.zip` file at the end. Inside it should h
 ```
 26/
 ├── code/
-│   └── 01_baseline_model.py   ← already exists ✅
+│   └── M1_baseline_model.py   ← already exists ✅
 ├── 26.tex                     ← the paper (will be created in Phase 5)
 ├── biblio.bib                 ← the references file (will be created in Phase 5)
 ├── results.txt                ← the final predictions (will be created in Phase 4)
@@ -278,7 +278,7 @@ Describe exactly what you did: how many samples you generated, for which classes
 **Goal:** Build at least 3 models. The models section is worth 4.0 points, split as: description of models (1.0), replicability (1.0), creativity (2.0).
 
 **What you already have:**
-- Model 1 (Naive Bayes baseline) → `01_baseline_model.py` ✅ — **Already done!**
+- Model 1 (Naive Bayes baseline) → `M1_baseline_model.py` ✅ — **Already done!**
 - Results from Model 1: **38.76% accuracy, 13.66% macro-F1** on the held-out set (534 records, fixed split) ✅
   (the earlier 37.09% used a different row set and split; the models phase now follows `Report_Plan.md` and `Models_Rationale.md`, not Phase 3 below)
 
@@ -717,7 +717,7 @@ Before zipping:
 
 Even if the professors probably won't run your code, you must be prepared if they do. Do a clean run:
 - Delete any generated files (`.pkl` model files, `.csv` intermediaries)
-- Run your scripts in order: `01_baseline_model.py`, `02_data_augmentation.py`, `02_model_improved_ml.py`, `03_model_bert.py`, `04_generate_results.py`
+- Run your scripts in order: `M1_baseline_model.py`, `02_data_augmentation.py`, `02_model_improved_ml.py`, `03_model_bert.py`, `04_generate_results.py`
 - Confirm all scripts run without errors on a clean environment
 
 ---
@@ -732,7 +732,7 @@ The ZIP must contain:
 ├── biblio.bib         ← bibliography source file
 ├── 26.tex             ← LaTeX source file
 └── code/
-    ├── 01_baseline_model.py
+    ├── M1_baseline_model.py
     ├── 02_data_augmentation.py
     ├── 02_model_improved_ml.py
     ├── 03_model_bert.py

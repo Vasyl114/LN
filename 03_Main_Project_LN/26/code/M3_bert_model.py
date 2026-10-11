@@ -1,14 +1,15 @@
 """
-05_model_bert.py
+M3_bert_model.py
 ================
-Model 3 for Group 26 NLP Project: the language-model side of the research question.
+Model 3 for Group 26 NLP Project: the language model that Model 4 is built on.
 
-RESEARCH QUESTION (short): does a clinical language model that reads only the short
-description beat a classical classifier that reads all the text?
+RESEARCH QUESTION (short): does a highly tuned language model that reads little text
+beat a classical classifier that reads all the text?
 
 WHAT THIS IS:
     Bio_ClinicalBERT (Alsentzer et al., 2019) with a linear classification layer,
-    fine-tuned on the description field ONLY, as the research question states.
+    fine-tuned on the description field ONLY (little text). Model 4 adds the first
+    keyword to its scores (see model_utils.add_first_keyword).
 
 WHY THESE CHOICES:
     - Bio_ClinicalBERT, not BioBERT or a general BERT: it was pre-trained on clinical
@@ -17,8 +18,8 @@ WHY THESE CHOICES:
     - Fine-tuned, not frozen: the 12 labels depend on specialty wording that the
       pre-trained encoder was never trained to separate.
     - Description only: it is the field the research question gives the language model.
-      It is short (median 16 words, 99th percentile 55 words), which keeps CPU
-      training feasible. The classical model reads the full note.
+      It is short (median 33 BERT tokens, only 0.1% of the descriptions are longer than
+      128 tokens), which keeps CPU training feasible. The classical model reads everything.
     - Hyperparameters FIXED IN ADVANCE from the usual range for BERT fine-tuning
       (learning rate 2e-5..5e-5, 2..4 epochs, Devlin et al., 2019). They are not tuned:
       the held-out set is not used to choose anything, and the language model is too
@@ -35,9 +36,13 @@ WHY THESE CHOICES:
       30 tokens, which made a step 2-3 times slower on this 4-core CPU for no benefit.
 
 HOW TO RUN (from 26/code/):
-    python3 05_model_bert.py                  # full run on train_augmented.csv
-    python3 05_model_bert.py --smoke          # 1 minute check that everything works, saves nothing
-    python3 05_model_bert.py --train ../../StudentsPack/train.csv   # original data only
+    python3 M3_bert_model.py                  # evaluation run: trains without the held-out records and
+                                              # saves their scores (results/m3_heldout_scores.npy)
+    python3 M3_bert_model.py --full           # final run for results.txt: trains on ALL the records of
+                                              # train_augmented.csv and saves the scores of the 398 test
+                                              # records (results/m3_test_scores.npy), about 55 minutes
+    python3 M3_bert_model.py --smoke          # 1 minute check that everything works, saves nothing
+    python3 M3_bert_model.py --train ../../StudentsPack/train.csv   # original data only
 """
 
 import argparse
@@ -53,8 +58,8 @@ import transformers
 from sklearn.metrics import accuracy_score, f1_score
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_linear_schedule_with_warmup
 
-from data_utils import (load_train, split_train_heldout, remove_heldout, seen_labels,
-                        copy_aware_scores, TRAIN_PATH, VALID_LABELS, RANDOM_SEED)
+from data_utils import (load_train, load_test, split_train_heldout, remove_heldout,
+                        TRAIN_PATH, VALID_LABELS, RANDOM_SEED)
 import evaluation
 from evaluation import summarize
 
@@ -118,6 +123,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', default='train_augmented.csv', help='training file (default: train_augmented.csv)')
     parser.add_argument('--smoke', action='store_true', help='tiny run to check the setup; saves nothing')
+    parser.add_argument('--full', action='store_true',
+                        help='train on ALL the records and score the test file (for results.txt)')
     args = parser.parse_args()
 
     cfg = dict(CONFIG)
@@ -125,29 +132,29 @@ def main():
     torch.set_num_threads(cfg['threads'])
 
     print("=" * 60)
-    print("MODEL 3 — Bio_ClinicalBERT fine-tuned on the description")
+    print("MODEL 3 — Bio_ClinicalBERT fine-tuned on the description" + (" (--full: all records, scores the test file)" if args.full else ""))
     print("=" * 60)
     print(f"  torch {torch.__version__} | transformers {transformers.__version__} | threads {torch.get_num_threads()}")
 
     # ── Data ──
     original = load_train()
-    train_orig, heldout_df = split_train_heldout(original)
-    train_df = remove_heldout(load_train(args.train), heldout_df)
+    _, heldout_df = split_train_heldout(original)
+    if args.full:       # final run: every record is used for training, the test file has no labels
+        train_df, eval_df = load_train(args.train), load_test()
+    else:               # evaluation run: the held-out records are removed from the training file
+        train_df, eval_df = remove_heldout(load_train(args.train), heldout_df), heldout_df
     if args.smoke:
-        train_df, heldout_eval = train_df.sample(320, random_state=cfg['seed']), heldout_df.head(64)
+        train_df, eval_df = train_df.sample(320, random_state=cfg['seed']), eval_df.head(64)
         cfg['epochs'] = 1
-    else:
-        heldout_eval = heldout_df
-    print(f"  Training file : {args.train} -> {len(train_df)} records (held-out records removed)")
-    print(f"  Evaluating on : {len(heldout_eval)} held-out original records")
+    print(f"  Training file : {args.train} -> {len(train_df)} records"
+          + ("" if args.full else " (held-out records removed)"))
+    print(f"  Scoring       : {len(eval_df)} " + ("test records" if args.full else "held-out original records"))
     print(f"  Config        : {json.dumps({k: v for k, v in cfg.items() if k != 'model_name'})}\n")
 
     label_id = {label: i for i, label in enumerate(CLASSES)}
     x_train = train_df['description'].fillna('').tolist()
     y_train = torch.tensor([label_id[l] for l in train_df['medical_specialty']])
-    x_held = heldout_eval['description'].fillna('').tolist()
-    y_held = heldout_eval['medical_specialty'].tolist()
-    seen = seen_labels(train_orig)       # copy labels come from the original training portion only
+    x_eval = eval_df['description'].fillna('').tolist()
 
     # ── Model ──
     tokenizer = AutoTokenizer.from_pretrained(cfg['model_name'], revision=cfg['revision'])
@@ -181,29 +188,36 @@ def main():
                       f"({time.time() - started:.0f}s)", flush=True)
         train_time = time.time() - started
 
-        scores = predict_scores(model, tokenizer, x_held, cfg['max_length'])
-        l0 = np.array(CLASSES)[scores.argmax(1)]
-        l1 = np.array(CLASSES)[copy_aware_scores(scores, CLASSES, heldout_eval, seen).argmax(1)]
-        entry = {'epoch': epoch, 'train_loss': running / steps_per_epoch, 'seconds': round(train_time),
-                 'heldout_accuracy_L0': accuracy_score(y_held, l0),
-                 'heldout_macro_f1_L0': f1_score(y_held, l0, average='macro', zero_division=0),
-                 'heldout_accuracy_L1': accuracy_score(y_held, l1)}
+        entry = {'epoch': epoch, 'train_loss': running / steps_per_epoch, 'seconds': round(train_time)}
+        if args.full:
+            print(f"  >> epoch {epoch}: {train_time:.0f}s\n", flush=True)
+            if epoch < cfg['epochs']:
+                log.append(entry)
+                continue
+        scores = predict_scores(model, tokenizer, x_eval, cfg['max_length'])
+        if not args.full:   # held-out accuracy after every epoch: logged only, never used to choose the epoch
+            pred = np.array(CLASSES)[scores.argmax(1)]
+            y_eval = eval_df['medical_specialty'].tolist()
+            entry['heldout_accuracy'] = accuracy_score(y_eval, pred)
+            entry['heldout_macro_f1'] = f1_score(y_eval, pred, average='macro', zero_division=0)
+            print(f"  >> epoch {epoch}: {train_time:.0f}s | held-out accuracy {entry['heldout_accuracy']*100:.1f}% "
+                  f"macro-F1 {entry['heldout_macro_f1']*100:.1f}% (logged only)\n", flush=True)
         log.append(entry)
-        print(f"  >> epoch {epoch}: {train_time:.0f}s | held-out L0 accuracy {entry['heldout_accuracy_L0']*100:.1f}% "
-              f"macro-F1 {entry['heldout_macro_f1_L0']*100:.1f}% | L1 accuracy {entry['heldout_accuracy_L1']*100:.1f}% "
-              f"(logged only, not used to choose the epoch)\n", flush=True)
 
     # ── Report the model after the last epoch ──
     if args.smoke:      # same code path as a real run, but written to a scratch folder
         evaluation.RESULTS_DIR = os.path.join('/tmp', 'm3_smoke_results')
     os.makedirs(evaluation.RESULTS_DIR, exist_ok=True)
-    np.save(os.path.join(evaluation.RESULTS_DIR, 'm3_heldout_scores.npy'), scores)
-    run_config = {**cfg, 'training_file': args.train, 'training_records': int(len(train_df)),
-                  'torch': torch.__version__, 'transformers': transformers.__version__,
-                  'epoch_log': log, 'classes': CLASSES}
-    for layer, pred in [('L0', l0), ('L1', l1)]:
-        summarize(f"m3_{layer}", heldout_eval, pred, per_class_table=(layer == 'L1'),
-                  train_labels=train_df['medical_specialty'], config={**run_config, 'layer': layer})
+    if args.full:
+        np.save(os.path.join(evaluation.RESULTS_DIR, 'm3_test_scores.npy'), scores)
+        print(f"Saved {evaluation.RESULTS_DIR}/m3_test_scores.npy: scores of the {len(eval_df)} test records.")
+    else:
+        np.save(os.path.join(evaluation.RESULTS_DIR, 'm3_heldout_scores.npy'), scores)
+        run_config = {**cfg, 'training_file': args.train, 'training_records': int(len(train_df)),
+                      'torch': torch.__version__, 'transformers': transformers.__version__,
+                      'epoch_log': log, 'classes': CLASSES}
+        summarize("m3", eval_df, np.array(CLASSES)[scores.argmax(1)], per_class_table=True,
+                  train_labels=train_df['medical_specialty'], config=run_config)
     if args.smoke:
         print(f"Smoke run finished; results written to {evaluation.RESULTS_DIR} only.")
 

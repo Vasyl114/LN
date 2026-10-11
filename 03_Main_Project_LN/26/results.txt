@@ -1,6 +1,6 @@
 Neurology
 Cardiovascular-Pulmonary
-Cardiovascular-Pulmonary
+Orthopedic
 Radiology
 Surgery
 Neurology
@@ -8,11 +8,11 @@ Cardiovascular-Pulmonary
 Surgery
 Surgery
 Ophthalmology
-Surgery
+Orthopedic
 Surgery
 Orthopedic
 Surgery
-Neurosurgery
+Orthopedic
 Gastroenterology
 Surgery
 Gastroenterology
@@ -20,34 +20,34 @@ Psychiatry-Psychology
 Surgery
 General Medicine
 Orthopedic
-General Medicine
-Obstetrics-Gynecology
-Surgery
-Cardiovascular-Pulmonary
-Surgery
-Surgery
-Cardiovascular-Pulmonary
-Orthopedic
-Surgery
-Surgery
-Surgery
-Cardiovascular-Pulmonary
-Surgery
-General Medicine
-General Medicine
-Surgery
-Surgery
-Cardiovascular-Pulmonary
-Orthopedic
-General Medicine
 Cardiovascular-Pulmonary
 Obstetrics-Gynecology
+Surgery
+Cardiovascular-Pulmonary
+Surgery
+Cardiovascular-Pulmonary
+Cardiovascular-Pulmonary
+Orthopedic
+Surgery
+Surgery
+Surgery
+Cardiovascular-Pulmonary
+Surgery
+General Medicine
+General Medicine
+Surgery
+Surgery
+Cardiovascular-Pulmonary
+Orthopedic
+Gastroenterology
+Cardiovascular-Pulmonary
+Obstetrics-Gynecology
 Orthopedic
 Surgery
 Obstetrics-Gynecology
 General Medicine
 Surgery
-Orthopedic
+Neurosurgery
 Neurology
 Surgery
 Surgery
@@ -57,7 +57,7 @@ Surgery
 Obstetrics-Gynecology
 Radiology
 Surgery
-Gastroenterology
+Neurology
 Surgery
 Surgery
 Surgery
@@ -65,10 +65,10 @@ Radiology
 Ophthalmology
 Orthopedic
 Surgery
-Cardiovascular-Pulmonary
+Radiology
 Surgery
+Orthopedic
 Cardiovascular-Pulmonary
-General Medicine
 Surgery
 General Medicine
 Cardiovascular-Pulmonary
@@ -83,7 +83,7 @@ Cardiovascular-Pulmonary
 Orthopedic
 Surgery
 Obstetrics-Gynecology
-Radiology
+Neurology
 Surgery
 Radiology
 Radiology
@@ -111,7 +111,7 @@ Orthopedic
 Surgery
 Surgery
 Surgery
-Surgery
+Cardiovascular-Pulmonary
 Cardiovascular-Pulmonary
 General Medicine
 Radiology
@@ -120,7 +120,7 @@ General Medicine
 Surgery
 General Medicine
 Psychiatry-Psychology
-Radiology
+Obstetrics-Gynecology
 Neurosurgery
 Surgery
 Cardiovascular-Pulmonary
@@ -141,9 +141,9 @@ Surgery
 Obstetrics-Gynecology
 Ophthalmology
 Gastroenterology
-Radiology
+Orthopedic
 General Medicine
-General Medicine
+Gastroenterology
 Cardiovascular-Pulmonary
 Radiology
 Surgery
@@ -157,9 +157,9 @@ Gastroenterology
 Surgery
 Radiology
 Neurosurgery
+Neurosurgery
 Surgery
-Surgery
-Surgery
+Neurosurgery
 Surgery
 Surgery
 General Medicine
@@ -170,7 +170,7 @@ Orthopedic
 Ophthalmology
 Neurosurgery
 Psychiatry-Psychology
-Psychiatry-Psychology
+General Medicine
 General Medicine
 Orthopedic
 General Medicine
@@ -181,7 +181,7 @@ Surgery
 Surgery
 Obstetrics-Gynecology
 Surgery
-General Medicine
+Cardiovascular-Pulmonary
 Surgery
 Radiology
 General Medicine
@@ -227,13 +227,13 @@ Ophthalmology
 Cardiovascular-Pulmonary
 Surgery
 Surgery
-Surgery
+Neurosurgery
 Cardiovascular-Pulmonary
-Neurology
+Neurosurgery
 Radiology
 Surgery
 Radiology
-General Medicine
+Cardiovascular-Pulmonary
 Surgery
 Surgery
 Cardiovascular-Pulmonary
@@ -256,7 +256,7 @@ Radiology
 Orthopedic
 Surgery
 Dermatology
-Cardiovascular-Pulmonary
+Obstetrics-Gynecology
 Surgery
 Cardiovascular-Pulmonary
 Surgery
@@ -282,12 +282,12 @@ Obstetrics-Gynecology
 Neurology
 Cardiovascular-Pulmonary
 Cardiovascular-Pulmonary
-Neurology
+Radiology
 Obstetrics-Gynecology
 Orthopedic
 General Medicine
-General Medicine
-Surgery
+Cardiovascular-Pulmonary
+Orthopedic
 Neurology
 Ophthalmology
 General Medicine
@@ -301,7 +301,7 @@ Neurology
 Surgery
 General Medicine
 Orthopedic
-Surgery
+Gastroenterology
 Orthopedic
 Neurosurgery
 General Medicine
@@ -313,7 +313,7 @@ Gastroenterology
 Neurology
 General Medicine
 Psychiatry-Psychology
-General Medicine
+Cardiovascular-Pulmonary
 Neurosurgery
 Surgery
 Neurology
@@ -321,7 +321,7 @@ Orthopedic
 Radiology
 Surgery
 Obstetrics-Gynecology
-Surgery
+Obstetrics-Gynecology
 Gastroenterology
 Gastroenterology
 Cardiovascular-Pulmonary
@@ -340,13 +340,13 @@ Psychiatry-Psychology
 Surgery
 Surgery
 Surgery
-Psychiatry-Psychology
+Cardiovascular-Pulmonary
 Cardiovascular-Pulmonary
 Orthopedic
 Neurology
 Radiology
 Dermatology
-General Medicine
+Gastroenterology
 Psychiatry-Psychology
 Orthopedic
 Radiology
@@ -374,8 +374,8 @@ Neurosurgery
 Radiology
 Cardiovascular-Pulmonary
 Surgery
-Surgery
-Surgery
+Obstetrics-Gynecology
+Obstetrics-Gynecology
 General Medicine
 Surgery
 Surgery
@@ -383,7 +383,7 @@ Radiology
 Surgery
 Obstetrics-Gynecology
 Surgery
-Orthopedic
+Neurology
 General Medicine
 Cardiovascular-Pulmonary
 Orthopedic

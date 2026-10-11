@@ -1,17 +1,17 @@
 # Project Status — Group 26 (NLP "Help the Doctor")
 
-> Hand-over document: what the project is, how the files are organised, what has been built, the numbers so far, where work stopped, and what is left. Written on **2026-10-08**, updated on **2026-10-09** (clean test file, `results.txt` generated). Deadline: **2026-10-16, 23:59** (Fenix, `26.zip`).
+> Hand-over document: what the project is, how the files are organised, what has been built, the numbers, where work stopped and what is left. Rewritten on **2026-10-11** after the model line-up was simplified (no layers, no copy-aware decoding). Deadline: **2026-10-16, 23:59** (Fenix, `26.zip`).
 
 ---
 
-## 1. The project in five lines
+## 1. The project in six lines
 
-- **Task:** predict the medical specialty (12 classes) of a clinical record from `train.csv` / `test_no_labels.csv`.
-- **Deliverables:** `26.zip` containing `26.pdf` (max 3 pages, template-based), `results.txt` (one label per line, no header, same order as the test file) and the code (no model weights).
-- **Grading:** 4 points automatic (accuracy above 49% **and** no class F1 below 25% on the hidden test labels) + 16 points for the paper. Section scores are in `Report_Plan.md`.
-- **Our research question:** *does a clinical language model fine-tuned only on the short description beat a classical classifier that reads all the text?*
-- **New on 2026-10-09:** the teachers published a **clean test set** (398 records, one per line, no header) to be used for `results.txt`, and confirmed we may train on the **entire** training dataset. The old test file was deleted from the repo. The 49% in the statement is only the threshold for the 2 automatic points, not a number we must reproduce.
-- **Rule reminders:** the test file is only for generating `results.txt`; the given files in `StudentsPack/` are never modified; LLM use must be declared in the paper; 3 points are lost if any instruction is not followed.
+- **Task:** predict the medical specialty (12 classes) of a clinical record (`train.csv` → `test_no_labels.csv`).
+- **Deliverables:** `26.zip` with `26.pdf` (max 3 pages, template-based), `results.txt` (398 labels, one per line, no header, same order as the test file) and `code/` (no model weights).
+- **Grading:** 4 points automatic (accuracy above 49% **and** no class F1 below 25% on the hidden test labels) + 16 for the paper (section scores in `Report_Plan.md`). The 49% is only a threshold, not a number to reproduce.
+- **Research question (paper, Introduction):** *does a fine-tuned clinical language model that reads only a little text of each record outperform a classical classifier that reads all of it?*
+- **Teachers' answer (2026-10-10):** no restriction on the approach (rule-based, ChatGPT, fine-tuning all allowed); what matters is a coherent narrative. So the first keyword may be used. They also published a clean test file (398 records) and allowed training on the entire training data.
+- **Rules:** the test file is only for `results.txt`; files in `StudentsPack/` are never modified; LLM use must be declared in the paper.
 
 ---
 
@@ -19,161 +19,104 @@
 
 ```
 03_Main_Project_LN/
-├── StudentsPack/                  GIVEN by the teachers. Never edited.
-│   ├── Project-2026-Description.pdf   task statement, rules, grading
-│   ├── Project-Template(.zip / -extracted/)   LaTeX template (template.tex) + biblio.bib
-│   ├── train.csv                  2,616 parsed rows, ';'-separated (7 corrupted rows, see §4)
-│   └── test_no_labels.csv         CLEAN version (2026-10-09): 398 records, 1 per line, NO header, NO labels
-│
-├── Project_Guide/                 Our documentation
+├── StudentsPack/        GIVEN, never edited (task PDF, LaTeX template, train.csv, test_no_labels.csv)
+├── Project_Guide/       our documentation
 │   ├── 01_project_overview_and_plan.md   digest of the PDF/template/CSVs (Section 9 = verified facts)
-│   ├── 02_what_is_given_and_what_to_build.md
-│   ├── 03_group26_complete_guide.md       old step-by-step guide (Phase 3 is superseded by the plan below)
-│   ├── Report_Plan.md             section-by-section plan of the paper (subparts, word caps, floats)
-│   ├── Project_Status.md          THIS FILE
-│   └── notes/project_storyline.md
-│
-├── 26/                            OUR WORK STATION = what becomes 26.zip
-│   ├── 26.tex, biblio.bib         the paper (see §7)
-│   ├── results.txt                398 predicted labels for the clean test file (made by script 08)
-│   ├── figures/                   fig1_class_distribution.png, fig2_text_lengths.png (made by script 02)
-│   └── code/
-│       ├── data_utils.py          SHARED: load_train() repair, load_test(), split_train_heldout(), remove_heldout(),
-│       │                          note_key(), seen_labels(), copy_aware_scores(), first_keyword_label()
-│       ├── evaluation.py          SHARED: summarize() = the one evaluation used by every model
-│       ├── model_utils.py         SHARED: the classical pipeline (TF-IDF + linear SVM) used by 04 and 07
-│       ├── 01_baseline_model.py   Model 1: Naive Bayes + TF-IDF on description (the given baseline)
-│       ├── 02_data_analysis.py    statistics + the two paper observations + figures
-│       ├── 03_data_augmentation.py  writes train_augmented.csv (run once, seeded)
-│       ├── 04_model_classical.py  Model 2: TF-IDF + linear SVM on all the text (CV-tuned)
-│       ├── 05_model_bert.py       Model 3: Bio_ClinicalBERT fine-tuned on the description (~50 min CPU)
-│       ├── 06_model_bert_embeddings.py  Model 4 (OPTIONAL, NOT RUN): frozen BERT on the full note (~1 h CPU)
-│       ├── 07_final_system.py     Model 5: layers L0/L1/L2 + fusion + the summary table
-│       ├── 08_generate_results.py writes ../results.txt (Model 2 at L2, trained on ALL training data)
-│       ├── train_augmented.csv    5,648 records (2,669 original + 2,979 generated)
-│       ├── train_clean.csv        the repaired train.csv, ONLY for inspection (no script reads it)
-│       ├── requirements.txt       pinned library versions
-│       └── results/               every model's metrics (.json), held-out predictions (.csv),
-│                                  saved scores (.npy), m3_training_log.txt, summary_table.csv
-└── __MACOSX/                      junk from unzipping on a Mac (ignore)
+│   ├── 02_..., 03_...   ORIGINAL guides written before the models existed (their model plans are superseded by this file)
+│   ├── Report_Plan.md   section-by-section plan of the paper
+│   ├── Project_Status.md  THIS FILE
+│   └── notes/project_storyline.md   non-technical story of the project (partly outdated, kept as background)
+└── 26/                  OUR WORK STATION = what becomes 26.zip
+    ├── 26.tex, biblio.bib, figures/   the paper and its two appendix figures
+    ├── results.txt                    398 predicted labels (made by code/07_generate_results.py)
+    └── code/
+        ├── data_utils.py     SHARED: load_train() (repairs the 7 corrupted rows in memory), load_test(),
+        │                     split_train_heldout(), remove_heldout(), first_keyword_label()
+        ├── evaluation.py     SHARED: summarize() = the one evaluation used by every model
+        ├── model_utils.py    SHARED: TF-IDF + linear SVM pipeline, add_first_keyword() (the Model 4 rule, weight 5)
+        ├── M1_baseline_model.py     M1  Naive Bayes + TF-IDF on description (the given baseline)
+        ├── 02_data_analysis.py      statistics, the two observations, figures
+        ├── 03_data_augmentation.py  writes train_augmented.csv (rule-based, seeded)
+        ├── M2_classical_model.py    M2  SVM on all fields, CV-tuned
+        ├── M3_bert_model.py         M3  Bio_ClinicalBERT on the description; --full = train on all records, score the test file
+        ├── M4_final_system.py       M4  = M3 + first keyword; summary table (reads saved scores, no training)
+        ├── 07_generate_results.py   writes ../results.txt from M4
+        ├── train_augmented.csv      5,648 records (2,669 original + 2,979 generated)
+        ├── requirements.txt         pinned library versions
+        └── results/                 small result files (see §3)
 ```
-
-Not in the repo: the LaTeX plan lives in `~/.claude/plans/` (Claude Code's own folder). Its content is summarised in §5 and in `Report_Plan.md`.
 
 ---
 
-## 3. How to run everything
+## 3. The models (one version each, no layers)
+
+| Model | Reads | Technique | Held-out acc / macro-F1 / lowest class F1 (%) |
+|---|---|---|---|
+| M1 baseline | description | lowercase + Porter, TF-IDF, Multinomial NB, defaults | 38.8 / 13.7 / 0.0 |
+| M2 classical | description, sample name, transcription, keywords | TF-IDF (1–2 words), class-balanced linear SVM; C = 250 and n-grams by 5-fold CV | 86.3 / 81.5 / 50.0 |
+| M3 language model | description (128 tokens) | Bio_ClinicalBERT + linear layer, fine-tuned, lr 3e-5, batch 16, 3 epochs, seed 42 | 48.9 / 51.0 / 20.8 |
+| **M4 final** | M3 + first keyword | first keyword's specialty added to M3's standardised scores with weight 5 (no score gap can outvote it); no training of its own | **92.1 / 89.6 / 70.0** |
+| ablation | M2 + first keyword | the same rule on M2 (information only) | 89.1 / 87.2 / 75.0 |
+
+- Held-out = 534 records (20%, stratified, seed 42, `split_train_heldout`); never trained on, never an augmentation source; nothing tuned on it. One accuracy carries about ±4 points.
+- M4 is 100% right on held-out records with a first keyword (440) and 55.3% on those without (94, decided by M3).
+- M2 reaches 88–89% on description + sample name + keywords alone (no transcription): the long transcription does not help it.
+- Augmentation makes no clear difference for M2 (86.7% original vs 86.0%/86.3% augmented).
+- The best C of M2 sits at the edge of the grid (250); the gain from 50 to 250 was about 1 point in CV.
+- M3's held-out numbers come from the saved scores of the run of 2026-10-08 (same code and data; training log: accuracy per epoch 53.4 → 50.2 → 48.9, the model memorises notes listed under other labels).
+- Removed on purpose (2026-10-11): the L0/L1/L2 layers, copy-aware decoding (it relies on the dataset never repeating a (label, note) pair, checkable only against test labels), the fusion of M2 and M3, and the frozen-embedding model.
+
+`results/` holds: `m1_baseline_original.json`, `m2.json`, `m3.json`, `m4.json` and their held-out prediction CSVs, `m2_config.json` (chosen hyperparameters), `m2_heldout_scores.npy`, `m3_heldout_scores.npy`, `m3_test_scores.npy` (after the `--full` run), `m2_input_ablation.csv`, `summary_table.csv`.
+
+---
+
+## 4. How to run everything
 
 From `26/code/` (Python 3.10, CPU only; versions in `requirements.txt`; PyTorch CPU: `pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu`):
 
 | Order | Command | Time (4-core laptop) | Output |
 |---|---|---|---|
-| 1 | `python3 02_data_analysis.py` | seconds | prints statistics, writes `../figures/*.png` |
+| 1 | `python3 02_data_analysis.py` | seconds | statistics, `../figures/*.png` |
 | 2 | `python3 03_data_augmentation.py` | ~25 s | `train_augmented.csv` |
-| 3 | `python3 01_baseline_model.py [train_augmented.csv]` | ~20 s | `results/m1_baseline_*` |
-| 4 | `python3 04_model_classical.py` | ~1 min | `results/m2_*`, `m2_heldout_scores.npy` |
-| 5 | `python3 05_model_bert.py` (`--smoke` = 2-min check) | ~50 min | `results/m3_*`, `m3_heldout_scores.npy` |
-| 6 | `python3 07_final_system.py` | ~2 min | `results/m5_*`, `summary_table.csv` |
-| 7 | `python3 08_generate_results.py [--layer L0/L1/L2]` | ~10 s | `../results.txt` (398 lines) |
-| opt. | `python3 06_model_bert_embeddings.py` | ~1 h | `results/m4_*` |
+| 3 | `python3 M1_baseline_model.py` | ~20 s | `results/m1_baseline_original.*` |
+| 4 | `python3 M2_classical_model.py` | ~10 min (large C is slow) | `results/m2*` |
+| 5 | `python3 M3_bert_model.py` (`--smoke` = 2-min check) | ~50 min | `results/m3_heldout_scores.npy` |
+| 6 | `python3 M4_final_system.py` | seconds | `results/m3.json`, `m4.json`, `summary_table.csv` |
+| 7 | `python3 M3_bert_model.py --full` | ~55 min | `results/m3_test_scores.npy` |
+| 8 | `python3 07_generate_results.py` | seconds | `../results.txt` |
 
-- Every script is seeded (42). Scripts 02, 03, 04 and the smoke test of 05 were re-run and gave identical outputs. The full run of 05 was run once.
-- `05` downloads Bio_ClinicalBERT pinned to revision `d5892b39a4adaed74b92212a44081509db72f87b` (needs internet the first time).
-- LaTeX: `tectonic` was installed to `~/.local/bin` (static build; it downloads packages on first use). Compile: copy `26.tex`, `biblio.bib`, `figures/` to a scratch folder and run `~/.local/bin/tectonic -X compile 26.tex`. Anyone else can use Overleaf.
+Every script is seeded (42). `05` downloads Bio_ClinicalBERT pinned to revision `d5892b39a4adaed74b92212a44081509db72f87b`. LaTeX: `~/.local/bin/tectonic -X compile 26.tex` in a scratch copy of `26.tex`, `biblio.bib`, `figures/` (or Overleaf).
 
 ---
 
-## 4. Key design decisions (and why)
+## 5. Key decisions
 
-1. **Data repair in memory, files untouched.** 7 rows of `train.csv` have a `description` cell that swallowed the following records (3 are cut at 32,759 characters). `load_train()` splits them back: 2,616 parsed rows → **2,669 records**. Treated as realistic scraping noise; The old test file had 4 such records; the teachers removed them in the clean version.
-2. **One fixed split.** 80% train (2,135) / 20% held out (534), stratified, seed 42, defined once in `data_utils.split_train_heldout()` and used by every script. Held-out records are never trained on and never used as an augmentation source. Nothing is tuned on the held-out set; hyperparameters are chosen by 5-fold CV inside the training portion (Model 2) or fixed in advance from the literature (Model 3).
-3. **Augmentation** (`03`): 15 variants inspired by EDA (curated synonym map, guarded WordNet, deletions, swaps, abbreviation expansion, etc.), generated only from training records, until every class has 400. Protected: upper-case abbreviations, numbers/dosages, spinal levels, laterality and negation words. The first keyword (the specialty) always stays first. Result: ratio largest:smallest class 36:1 → 2:1.
-4. **Models and why** (full reasoning is in the script headers):
-   - **M1** Naive Bayes + TF-IDF on description: the given reference.
-   - **M2** linear SVM on description + sample name + transcription: the classical side ("all the text"). Keywords deliberately not in its text input.
-   - **M3** Bio_ClinicalBERT on description only: the language-model side. Pre-trained on clinical notes (same genre). lr 3e-5, batch 16, 3 epochs, max length 128, length-bucketed batches, seed 42, last epoch reported (not tuned).
-   - **M4 (optional)** frozen BERT on the full note: separates model type from amount of text.
-   - **M5** final system: layers below + fusion of M2 and M3 (scores rescaled per record and added with equal weight, not tuned).
-5. **Layers** (reported separately so the fair comparison is not hidden by the shortcuts):
-   - **L0** model alone (text only).
-   - **L1** + copy-aware decoding: the dataset has no repeated (label, note) pair, so a held-out note that already exists in train almost always has a *different* label (242 of 243). The labels the training data carries for that note are removed from the candidates. Uses training labels only.
-   - **L2** + first-keyword feature: the first keyword is the specialty itself in 100% of records with keywords; added as its own one-hot feature block (weight 3, chosen by CV). The classifier learns to trust it; no hand-written rule, but *we* chose to expose that field.
-
----
-
-## 5. Results so far (held-out, 534 records, accuracy / macro-F1 / lowest class F1, %)
-
-| Model | L0 text only | L1 + copy-aware | L2 + keywords |
-|---|---|---|---|
-| Always answering "Surgery" | 33.5 | | |
-| M1 Naive Bayes, original / augmented data | 38.8 / 13.7 / 0.0 · 41.8 / 41.7 / 21.1 | | |
-| M2 SVM on all text (augmented) | 41.8 / 46.7 / 19.5 | 78.3 / 78.1 / 66.7 | 93.3 / 91.3 / 76.2 |
-| M3 BERT on description (augmented) | 48.9 / 51.0 / 20.8 | 75.7 / 73.7 / 57.1 | not defined alone |
-| Fusion M2 + M3 | 44.0 / 49.1 / 19.5 | 79.4 / 79.9 / 70.6 | **94.8 / 93.6 / 80.0** (current final system) |
-
-Other measured facts:
-- **Input fields (M2, L0 → L1):** description 36.7 → 65.2, + sample name 40.8 → 71.9, + transcription 42.7 → 77.9 (original data). More text helps.
-- **Augmentation:** within about ±1 point for the linear model (class-weighted already). Report honestly.
-- **M3 per epoch (L0 accuracy):** 53.4 → 50.2 → 48.9. It memorises notes whose copies carry other labels, so it gets worse. The epoch was fixed in advance (3), so 48.9 is the reported number.
-- **Final system by kind of record:** with keywords 99.5–100% (440 records); without keywords 88.9% if a copy is in train (27), 64.2% if not (67).
-- **Noise:** one accuracy on 534 records carries about ±4 points.
-
-Dataset facts used in the paper: 731 distinct notes (1,530 records, 58% of those with a transcription) appear under more than one specialty; 2,219 records have keywords (all with the label first), 450 (16.9%) have none; descriptions average 18.9 words, transcriptions 457.0.
+1. **Data repair in memory, files untouched.** 7 rows of `train.csv` swallowed the following records: 2,616 parsed rows → 2,669 records (noise kept as given).
+2. **One fixed split** (80/20) used by every script; hyperparameters by CV inside the training portion or fixed in advance.
+3. **Augmentation:** 15 rule-based EDA-inspired variants (no language model), generated from training records only until every class has 400; first keyword kept first; ratio 36:1 → 2:1.
+4. **Two dataset properties** drive the design and are disclosed as a limitation: the first keyword is the specialty (2,219 of 2,219 records with keywords) and the same note appears under several specialties (58%), so text alone cannot determine the label (Observation 1) and the keywords can (Observation 2). The final model relies on the first.
 
 ---
 
 ## 6. Where we stopped
 
-**Done**
-- [x] Data analysis, figures, the two observations (script 02).
-- [x] Data repair loader, fixed split, augmentation (scripts 03, `data_utils.py`).
-- [x] Models 1, 2, 3 and the final-system comparison (scripts 01, 04, 05, 07), with a shared evaluation.
-- [x] Paper: Introduction, Data Analysis, Data Augmentation written (3 pages compile, citations resolve, no white-space gaps).
-- [x] Documentation: `Report_Plan.md`, guide fixes, this file.
+**Done:** the model scripts were renamed to the report's names (`M1_baseline_model.py` … `M4_final_system.py`); data analysis, loader, split, augmentation; models M1–M4 with a shared evaluation; paper Introduction, Data (2.1, 2.2), Models, Experimental Setup with the hyperparameter table.
 
-**Not done**
-- [ ] `Models_Rationale.md` (short "why this over that" per model; the same reasoning is already in the script headers).
-- [ ] Model 4 (script written, never run; optional).
-- [x] **`results.txt`** generated by `08_generate_results.py`: Model 2 at L2 (SVM + first-keyword feature + copy-aware decoding), trained on all 2,669 records + the generated ones, 398 lines, deterministic (identical on rerun); predictions agree with the first keyword in 320/320 records that have one. Use `--layer L1` or `L0` to regenerate without the keywords / copy-aware step if the teachers object. The BERT fusion is NOT used (it would need the 50-minute fine-tune to reproduce).
-- [ ] Confusion matrix figure (abbreviated labels) and a script that lists misclassified held-out examples (needed for the Discussion).
-- [ ] Paper sections: Models, Experimental Setup (+ 4.1 hyperparameter table), Results (model table, per-class table, confusion matrix), Discussion, Future Work, LLM-use declaration, missing references (PyTorch etc.).
-- [ ] Final packaging: compile `26.pdf` (max 3 pages), run all scripts from clean, build `26.zip` (no weights).
+**To do**
+- [x] `results.txt` for M4 written on 2026-10-11 (`M3_bert_model.py --full`, then `07_generate_results.py`): 398 lines, trained on all 5,648 records, 320 records decided by the first keyword and 78 by M3; identical on rerun (md5 49fb157b…); 363 of 398 lines equal the old SVM file.
+- [ ] **Check with the teacher (user's note):** whether the replicability details must appear in the 3 pages. They were removed from the paper to save space: seed 42, library versions, pinned Bio_ClinicalBERT revision, that `results.txt` is trained on all 5,648 records, the extra hyperparameters (TF-IDF `min_df` 2, 150,000 features, sublinear tf; BERT warm-up 10%, weight decay 0.01, AdamW). All of it is in the code headers and `requirements.txt`.
+- [ ] **M3 verification rerun** (started 2026-10-11, about 50 min): `M3_bert_model.py` rewrites `results/m3_heldout_scores.npy`; compare with the old scores (copy in `/tmp/claude-1000/`). If identical, M3 and M4 numbers stand; if not, rerun `M4_final_system.py` and update the numbers in §3.
+- [ ] Confusion matrix figure (abbreviated labels) and a script listing 3 misclassified held-out examples (from `results/m4_heldout_predictions.csv`).
+- [ ] Paper: Results (model table, per-class table, confusion matrix), Discussion (answer to the question, why M4 wins, limitation: reliance on the first keyword; M2 with the same rule reaches 89.1%), Future Work, LLM-use declaration, missing references; keep within 3 body pages (currently Sections 1–4 end on page 3).
+- [ ] Final packaging: compile `26.pdf`, clean run of all scripts, build `26.zip` (`26.pdf`, `results.txt`, `code/`; no weights), submit before the deadline.
 
 ---
 
-## 7. The paper (`26/26.tex`) — current state
+## 7. Gotchas
 
-Template headings kept exactly. Written: Introduction (research question stated), 2.1 Data Analysis (Table 1, Observations 1 and 2), 2.2 Data Augmentation. Everything from Models onward is a bare heading on purpose (the plan lives in `Report_Plan.md`). Appendix holds the two figures. Uses `\raggedbottom` to avoid stretched spacing; acronyms defined with short forms.
-
----
-
-## 8. Open decisions and questions
-
-1. **Teachers' opinion** on the two shortcuts (keywords field, copy-aware decoding). Draft email: ask whether using the first keyword as an input feature is acceptable, state the two properties found, promise results with and without it. Send to `meic-ln@disciplinas.tecnico.ulisboa.pt`, subject "Project". If the answer is no: submit L1 without keywords (about 78–79% held-out).
-2. **Which system generates `results.txt`:** M2 SVM only (93.3%, reproducible in minutes) or Fusion (94.8%, needs the 50-minute BERT fine-tune to reproduce). We cannot ship weights.
-3. **Without any shortcut** the best model alone is M3 at 48.9% (just under 49%; lowest class F1 20.8%), so the automatic points would be borderline.
-4. ~~Test-file alignment~~ — **solved** by the clean test file (398 records = 398 lines).
-5. ~~Baseline 38.8% vs 49%~~ — not a concern: 49% is only the threshold for the 2 automatic points.
-6. **Risk to disclose:** copy-aware decoding assumes test notes behave like held-out notes (242 of the 396 non-empty test notes also occur in train).
-7. **Model 4:** run (about 1 hour) or skip.
-
----
-
-## 9. Gotchas
-
-- Both CSVs are `;`-separated with `"` quoting. The clean `test_no_labels.csv` has **no header**: use `data_utils.load_test()` (it reads with `header=None`; the default would drop the first record).
+- Both CSVs are `;`-separated with `"` quoting; the clean test file has no header (use `data_utils.load_test()`).
 - Scripts must be run from `26/code/` (relative paths).
-- `train_clean.csv` is only a viewing aid (run `python3 data_utils.py` to regenerate it). Nothing depends on it.
-- `__pycache__` and `.pyc` files were committed once by mistake; consider a `.gitignore` (`__pycache__/`, `*.pyc`). The `results/` folder is small enough to commit (the `.npy` score files are needed by script 07).
-- PyTorch results depend on the thread count (fixed to 4 in script 05) and library versions; the numbers above come from the versions in `requirements.txt`.
+- PyTorch results depend on the thread count (fixed to 4 in `05`) and library versions.
 - Held-out accuracy is noisy (±4 points); do not over-interpret differences of 1–3 points.
-
----
-
-## 10. Suggested next steps (in order)
-
-1. Send the email to the teachers (§8.1): keywords field and copy-aware decoding. If the answer is no, run `08_generate_results.py --layer L1` (or `L0`).
-2. Write the confusion matrix and the error-example script; write `Models_Rationale.md`.
-3. Write the Models, Experimental Setup and Results sections of the paper, then Discussion, Future Work, the LLM-use declaration and missing references.
-4. Decide on Model 4 (optional) and on the BERT fusion for the final system (§8.2).
-5. Compile, check 3 pages, clean run of all scripts, build `26.zip` (`26.pdf`, `results.txt`, `code/`), submit before **October 16, 23:59**.
+- Consider a `.gitignore` with `__pycache__/` and `*.pyc`.
+- `train_clean.csv` (the repaired `train.csv` for inspection) was deleted; `python3 data_utils.py` regenerates it.

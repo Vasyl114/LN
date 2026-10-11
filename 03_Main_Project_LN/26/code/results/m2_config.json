@@ -13,11 +13,11 @@
     "Radiology",
     "Surgery"
   ],
-  "fields": "DNT",
+  "fields": "DNTK",
   "training_file": "augmented",
   "ngram_range": [
     1,
-    1
+    2
   ],
-  "C": 0.5
+  "C": 250.0
 }

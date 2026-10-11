@@ -1,5 +1,5 @@
 """
-01_baseline_model.py
+M1_baseline_model.py
 ====================
 Baseline model for Group 26 NLP Project.
 
@@ -23,8 +23,8 @@ HOW IT IS EVALUATED:
 
 HOW TO RUN:
     From the 26/code/ directory:
-        python3 01_baseline_model.py                        # original training data
-        python3 01_baseline_model.py train_augmented.csv    # any other training file
+        python3 M1_baseline_model.py                        # original training data
+        python3 M1_baseline_model.py train_augmented.csv    # any other training file
     The training file must have the same five columns as train.csv.
     Results are also saved in results/ (see evaluation.py).
 """

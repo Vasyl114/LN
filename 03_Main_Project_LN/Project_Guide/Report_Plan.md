@@ -67,36 +67,35 @@ Kept out: any remedy (2.2) and any model consequence beyond a forward pointer.
 Kept out of 2.2: the split itself (percentages, sizes, seed, stratification). Those belong only to Section 4, subpart 1.
 4. **Outcome**: Table 2 (original, added and after counts). The effect on performance is reported in Results.
 
-### 3 Models — 4.0 pts — written (baseline in opening paragraph, then M2, M3, M5; layers L0–L2)
-0. **Design rationale** (one short paragraph): how the set of models maps onto the RQ.
-1. **Baseline**: the official weak baseline, as the reference point.
-2. **Classical model on the full text**: one side of the RQ.
-3. **Domain language model on the short description**: the other side.
-4. **Additional variant** (optional, for the creativity mark): only if it adds to the RQ.
-
-Every model uses the same five slots in the same order: input fields, preprocessing, representation, classifier, imbalance handling. Hyperparameter values are not given here; they are referenced in 4.1.
+### 3 Models — 4.0 pts — written (opening paragraph with the objective, then M1 to M4, one paragraph each)
+Each model paragraph follows the same order: what changed and why (with the research question in mind), how it works, how it is reproduced.
+- **M1** the official baseline, the reference point.
+- **M2** classical model on all the fields (including keywords), plain.
+- **M3** Bio_ClinicalBERT fine-tuned on the description only (stepping stone).
+- **M4** M3 plus the first keyword (weight 5, fixed); the best model and the one that writes `results.txt`.
+No layers and no copy-aware decoding anywhere (removed 2026-10-11). Hyperparameter values are not given here; they are in Table 3 of 4.1.
 
 Points: at least three models described (1.0), replicability (1.0), creativity (2.0).
 
-### 4 Experimental Setup — 1.0 pt — written (split, metrics, environment; 4.1 = 8-row hyperparameter table)
-1. **Data and splits**: how the own test set is built (stratified, seed, size), what is used for tuning, how notes that appear more than once are handled, and that `test_no_labels.csv` is used only for `results.txt`.
-2. **Metrics**: accuracy, macro-F1, per-class F1 and the lowest class F1, each with one clause on why.
-3. **Environment**: library versions, hardware, seeds.
+### 4 Experimental Setup — 1.0 pt — written
+1. **Datasets**: the given `train.csv` (repaired) or its augmented version.
+2. **Splits**: 80/20, stratified, fixed by a seed; augmentation applied after the split, to the training part only.
+3. **Evaluation**: accuracy, macro-F1, lowest per-class F1, against the 49% / 25% thresholds.
 
 **4.1 Parameters/Hyperparameters**: one compact table, one row per hyperparameter with its value and a few-word explanation (the template asks that every hyperparameter mentioned is explained).
 
-### 5 Results — 1.5 pts — about 120 words + Table 3, Table 4, Figure 1 — *to do*
-1. **Overall comparison**: Table 3, one row per model, with and without augmentation.
-2. **Per-label results of the best model**: Table 4.
-3. **Confusion matrix** of one model: Figure 1 with abbreviated labels, plus one or two sentences reading it.
-4. **Submitted system**: one sentence naming the model used for `results.txt`.
+### 5 Results — 1.5 pts — about 120 words + Table 4, Table 5, Figure 1 — *to do*
+1. **Overall comparison**: Table 4, one row per model (M1 to M4) plus the ablation row "M2 + first keyword" (accuracy, macro-F1, lowest class F1), numbers from `results/summary_table.csv`.
+2. **Per-label results of M4**: Table 5 (or one sentence if space is short).
+3. **Confusion matrix** of M4: Figure 1 with abbreviated labels, plus one or two sentences reading it.
+4. **Submitted system**: one sentence naming M4 for `results.txt`.
 
 Kept out: every "because". Interpretation belongs to Discussion.
 
-### 6 Discussion — 3.0 pts — about 360 words + Table 5 — *to do*
-1. **Answer to the RQ**: direct, with numbers from Table 3.
+### 6 Discussion — 3.0 pts — about 360 words + Table 6 — *to do*
+1. **Answer to the RQ**: direct, with numbers from Table 4.
 2. **Most common errors**: the dominant confusions from Figure 1 and their cause, linked back to the observations of 2.1.
-3. **Three misclassified examples** from the own test set: Table 5 (text excerpt, correct label, predicted label) with an interpretation of each in the text.
+3. **Three misclassified examples** from the own test set: Table 6 (text excerpt, correct label, predicted label) with an interpretation of each in the text.
 4. **Effect of augmentation**: what changed for the small classes.
 5. **Limitations**: of the data (including labels the group disagrees with) and of the system.
 
@@ -119,11 +118,11 @@ Only material the paper can be understood without: the class distribution chart,
 |---|---|---|---|
 | Table 1 | 2.1 | Records and % per specialty | done |
 | Table 2 | 2.2 | Records per specialty before, added and after augmentation | done |
-| Hyperparameter table | 4.1 | Value and short explanation per hyperparameter | to do |
-| Table 3 | 5 | Model comparison (layers L0 / L1 / L2) | to do |
-| Table 4 | 5 | Per-label results of the best model | to do |
+| Table 3 | 4.1 | Hyperparameters: value and short explanation | done |
+| Table 4 | 5 | Model comparison M1 to M4 and the ablation row | to do |
+| Table 5 | 5 | Per-label results of M4 | to do |
 | Figure 1 | 5 | Confusion matrix | to do |
-| Table 5 | 6 | Three misclassified examples | to do |
+| Table 6 | 6 | Three misclassified examples | to do |
 
 Each table sits in the section that discusses it (Table 1 in 2.1, Table 2 in 2.2), so a table never appears before its own section heading. The research question is shown in a grey box at the end of the first paragraph of the Introduction.
 
@@ -135,7 +134,7 @@ The class distribution chart and the text length chart are in Appendix A, becaus
 
 - **Page 1**: title and authors; Introduction; start of 2.1 (Table 1 may land at the top of page 2).
 - **Page 2**: rest of 2.1 with Table 1; 2.2 with Table 2.
-- **Page 3 (currently empty headings)**: 3 Models; 4 Experimental Setup with the 4.1 table; 5 Results with Tables 3 and 4 and Figure 1; 6 Discussion with Table 5; 7 Future Work. These sections will not fit on one page: the body now ends on page 2, so the remaining budget is page 3 only, and the text of Models, Setup, Results and Discussion must be kept to the word caps above.
+- **Page 3 (currently empty headings)**: 3 Models; 4 Experimental Setup with the 4.1 table; 5 Results with Tables 4 and 5 and Figure 1; 6 Discussion with Table 6; 7 Future Work. These sections will not fit on one page: Sections 1 to 4 already reach page 3, so Results, Discussion and Future Work must share what is left of it, and the text of Models, Setup, Results and Discussion must be kept to the word caps above.
 - **After page 3**: Bibliography with the LLM statement; Appendix A.
 
 ---
