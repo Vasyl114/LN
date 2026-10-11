@@ -36,13 +36,13 @@
 \label{sec:intro}
 % ============================================================
 
-This report describes the development and comparison of natural language processing models that assign a clinical text to one of 12 medical specialties. Doing this automatically helps organise health records, but it may be harder than it sounds as these datasets come with several challenges such as class imbalance and the fact that the same note can be relevant to more than one specialty. The goal is to answer the following research question:
+This report describes the development and comparison of natural language processing models that assign a clinical text to one of 12 medical specialties. The goal is to answer the following research question:
 
 \medskip
 \noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep\relax}{\textbf{Does a domain-specific language model, fine-tuned only on the short description of a clinical record, outperform a classical classifier trained on all the text available for that record?}}}
 \medskip
 
-To answer it, we first analyse the data (Section~\ref{sec:analysis}) and reduce its class imbalance through augmentation (Section~\ref{sec:augmentation}). We then compare a baseline, a classical model and a clinical language model (Section~\ref{sec:models}) on a held-out portion of the training data (Section~\ref{sec:setup}), and examine their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
+To answer it, we follow a phased approach. First, we analyse the data we were given (Section~\ref{sec:analysis}) and build a more complete dataset, balancing the classes through augmentation (Section~\ref{sec:augmentation}). Then, starting from the baseline, we develop progressively better models based on what the data revealed (Section~\ref{sec:models}), compare them on a held-out part of the data (Section~\ref{sec:setup}) and study their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
 
 % ============================================================
 \section{Data}
@@ -134,12 +134,51 @@ Dermatology              &  25 & 380 & 405 \\
 \label{sec:models}
 % ============================================================
 
+Our objective was to develop models step by step that beat the teachers' baseline, i.e., above 49\% accuracy and no per-class F1 below 25\%, while answering the research question.
+
+\textbf{M1.} The baseline itself, kept as the reference every change is measured against. It reads only the description, lowercased and stemmed, and counts words with \ac{tfidf} for a \ac{mnb}. It is trained with default settings and has no random component, so it reproduces exactly.
+
+\textbf{M2.} Drops the restriction to the description and reads the sample name and the transcription too, since the question asks whether the full text helps a classical model; swaps \ac{mnb} for a linear \ac{svm}, which copes better with thousands of correlated word features. Words are weighted by \ac{tfidf} with sublinear frequency, the \ac{svm} learns one boundary per specialty, and class-balanced weights make the rare ones count more. Keywords are left out so that the comparison with M3 is not decided by the label hidden in them (Observation~2).
+
+\textbf{M3.} Goes back to the description only, the other side of the question, but swaps word counts for Bio\_ClinicalBERT~\cite{bioclinicalbert}, already pre-trained on clinical notes and able to extract more meaning from a short text. A linear layer is added and all weights are fine-tuned, since the encoder was never trained to separate specialties. The description is cut at 128 tokens and the model sees the augmented data for three epochs.
+
+\textbf{M4.} Not a new learner but a use of the dataset's structure. It takes the scores of M2 (or of M2 and M3 averaged after standardisation) and adds a \emph{first-keyword feature}, a one-hot vector with its own weight, because the first keyword is the specialty (Observation~2); then \emph{copy-aware decoding} removes the labels that training copies of the same note already carry (Observation~1). Nothing is hard-coded: the feature weight is chosen by cross-validation and the copies are looked up in the training records. Since both steps exploit how the data was built, we report three layers: L0 the model alone, L1 plus decoding, L2 plus the keyword feature. M2 and M3 are compared at L0 and L1; L2 produces \texttt{results.txt}.
+
 % ============================================================
 \section{Experimental Setup}
 \label{sec:setup}
 % ============================================================
 
+\textbf{Datasets.} Models were trained either on the given \texttt{train.csv}, with the corrupted rows repaired, or on its augmented version (Section~\ref{sec:augmentation}), which lets us measure what augmentation adds.
+
+\textbf{Splits.} In every run, 80\% of the original records are used for training and 20\% are held out for evaluation. The split is stratified and fixed by a seed, so the held-out 20\% is always the same and runs are comparable; augmentation is applied after it, to the training part only.
+
+\textbf{Evaluation.} Each script compares the predictions on the held-out records with their true labels and reports accuracy, macro-F1 and the lowest per-class F1, aiming to beat the 49\% accuracy and the 25\% per-class F1 set by the teachers.
+
 \subsection{Parameters/Hyperparameters}
+
+Hyperparameters are settings chosen before training, unlike parameters which are learned from the data. In Table~\ref{tab:hyper}, ``CV'' means chosen by cross-validation and ``fixed'' set in advance, never tuned on the held-out set.
+
+\begin{table}[!ht]
+\centering
+\caption{Hyperparameters.}
+\label{tab:hyper}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l@{\hspace{4pt}}l@{\hspace{4pt}}l@{}}
+\toprule
+Setting & Value & Meaning \\
+\midrule
+M2 regularisation $C$ & 0.5 (CV) & lower = looser fit \\
+M2 n-grams & words (CV) & single words, not pairs \\
+M2 class weights & balanced & rare classes count more \\
+M3 learning rate & $3\!\times\!10^{-5}$ & size of each update \\
+M3 batch / epochs & 16 / 3 & records per update / passes \\
+M3 max.\ length & 128 tokens & longer input is cut \\
+M4 keyword weight & 3.0 (CV) & trust in the first keyword \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ============================================================
 \section{Results}

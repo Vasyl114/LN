@@ -67,7 +67,7 @@ Kept out: any remedy (2.2) and any model consequence beyond a forward pointer.
 Kept out of 2.2: the split itself (percentages, sizes, seed, stratification). Those belong only to Section 4, subpart 1.
 4. **Outcome**: Table 2 (original, added and after counts). The effect on performance is reported in Results.
 
-### 3 Models — 4.0 pts — about 360 words (largest text block) — *to do*
+### 3 Models — 4.0 pts — written (baseline in opening paragraph, then M2, M3, M5; layers L0–L2)
 0. **Design rationale** (one short paragraph): how the set of models maps onto the RQ.
 1. **Baseline**: the official weak baseline, as the reference point.
 2. **Classical model on the full text**: one side of the RQ.
@@ -78,7 +78,7 @@ Every model uses the same five slots in the same order: input fields, preprocess
 
 Points: at least three models described (1.0), replicability (1.0), creativity (2.0).
 
-### 4 Experimental Setup — 1.0 pt — about 200 words including 4.1 — *to do*
+### 4 Experimental Setup — 1.0 pt — written (split, metrics, environment; 4.1 = 8-row hyperparameter table)
 1. **Data and splits**: how the own test set is built (stratified, seed, size), what is used for tuning, how notes that appear more than once are handled, and that `test_no_labels.csv` is used only for `results.txt`.
 2. **Metrics**: accuracy, macro-F1, per-class F1 and the lowest class F1, each with one clause on why.
 3. **Environment**: library versions, hardware, seeds.
