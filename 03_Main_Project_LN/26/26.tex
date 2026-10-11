@@ -12,10 +12,11 @@
 % TITLE
 \title{Medical Specialty Classification from Clinical Notes: Does a Language Model Beat Classical Text Features?}
 
-
 % AUTHORS
 \author{Group 26 | André Maçorano (110203, 25\%), David Fonseca (109494, 25\%), Miguel Ferreira (110268, 25\%), Vasyl Podvirnyy (109545, 25\%)}
 %\affil{Instituto Superior Técnico, Universidade de Lisboa}
+
+\date{}
 
 \begin{document}
 
@@ -52,7 +53,7 @@ To answer it, we follow a phased approach. First, we analyse the data we were gi
 \subsection{Data Analysis}
 \label{sec:analysis}
 
-\textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} (the full note) and \texttt{keywords}. The file, adapted from a public Kaggle dataset~\cite{kaggle}, parses into 2{,}616 rows, but seven of them had absorbed the 56 records that followed; splitting these back in memory gives 2{,}669 records. Descriptions are short (19 words on average) and transcriptions long (457), see Figure~\ref{fig:text_lengths} in the Appendix.
+\textbf{Dataset.} Each record has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} and \texttt{keywords}.
 
 \textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance, from Surgery with 893 records to Dermatology with 25 (about 36:1), which biases classifiers towards the frequent classes~\cite{imbalance_survey}.
 
@@ -91,35 +92,7 @@ Dermatology              &  25 &  0.9 \\
 \subsection{Data Augmentation}
 \label{sec:augmentation}
 
-As noted in Section~\ref{sec:analysis}, the data is strongly imbalanced across specialties, which biases the models towards the dominant ones. We therefore enlarged every class below 400 records with rule-based synthetic records, with no language model involved. Each new record applies one of 15 variants inspired by \ac{eda}~\cite{wei2019eda}, combining synonym replacement (a clinical term map and WordNet~\cite{miller1995wordnet}), word and sentence deletion, adjacent-word swaps, filler removal, abbreviation expansion and number rewriting. Keywords after the first are subsampled and shuffled, and clinically sensitive terms (negations, laterality, numbers, dosages) are never altered. This added 2{,}979 records, raising the training file to 5{,}648 and reducing the ratio between the largest and the smallest class from about 36:1 to 2:1 (Table~\ref{tab:aug_dist}).
-
-\begin{table}[!ht]
-\centering
-\caption{Records per specialty before and after augmentation.}
-\label{tab:aug_dist}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lrrr}
-\toprule
-\textbf{Specialty} & \textbf{Original} & \textbf{Added} & \textbf{After} \\
-\midrule
-Surgery                  & 893 &   0 & 893 \\
-Cardiovascular-Pulmonary & 309 & 153 & 462 \\
-Orthopedic               & 300 & 160 & 460 \\
-Radiology                & 222 & 222 & 444 \\
-General Medicine         & 212 & 230 & 442 \\
-Gastroenterology         & 195 & 244 & 439 \\
-Neurology                & 184 & 253 & 437 \\
-Obstetrics-Gynecology    & 136 & 291 & 427 \\
-Neurosurgery             &  79 & 337 & 416 \\
-Ophthalmology            &  73 & 342 & 415 \\
-Psychiatry-Psychology    &  41 & 367 & 408 \\
-Dermatology              &  25 & 380 & 405 \\
-\midrule
-\textbf{Total}           & \textbf{2{,}669} & \textbf{2{,}979} & \textbf{5{,}648} \\
-\bottomrule
-\end{tabular}
-\end{table}
+As noted in Section~\ref{sec:analysis}, the data is strongly imbalanced across specialties, which biases the models towards the dominant ones. We therefore enlarged every class below 400 records with rule-based synthetic records, with no language model involved. Each new record applies one of 15 variants inspired by \ac{eda}~\cite{wei2019eda}, combining synonym replacement (a clinical term map and WordNet~\cite{miller1995wordnet}), word and sentence deletion, adjacent-word swaps, filler removal, abbreviation expansion and number rewriting. Keywords after the first are subsampled and shuffled, and clinically sensitive terms (negations, laterality, numbers, dosages) are never altered. This added 2{,}979 records, raising the training file to 5{,}648 and reducing the ratio between the largest and the smallest class from about 36:1 to 2:1.
 
 % ============================================================
 \section{Models}
@@ -204,26 +177,9 @@ M2 + first keyword (comparison) & 89.1 & 87.2 & 75.0 \\
 \label{sec:discussion}
 % ============================================================
 
-\textbf{Research question.} With little text, the description and the first keyword, M4 outperforms M2, which reads every field: 92.1\% against 86.3\% accuracy and 89.6\% against 81.5\% macro-F1. The comparison does not isolate the language model, though. The same keyword rule applied to M2 gives 89.1\%, so the keyword explains most of the gap and the language model adds about 3 points, the size of the uncertainty of the test set. Without the keyword, M3 reaches only 48.9\%, because the description cannot separate specialties that share notes (Observation~1). The answer is therefore yes on this dataset, but mainly because one short field carries the label (Observation~2), not because the language model understands the text better.
+\textbf{Research question.} With little text, the description and the first keyword, M4 outperforms M2. The same keyword rule applied to M2 gives 89.1\%, so the keyword explains most of the gap, the size of the uncertainty of the test set. Without the keyword, M3 reaches only 48.9\%, because the description cannot separate specialties that share notes (Observation~1). The answer is therefore yes on this dataset, but mainly because one short field carries the label (Observation~2), not because the language model understands the text better.
 
-\textbf{Errors.} All 42 errors of M4 fall on the 94 held-out records without keywords, where M3 decides alone (55.3\% accuracy); 22 of the 42 are notes listed under more than one specialty (Observation~1). Table~\ref{tab:examples} shows three examples. In the first, the description lists generic symptoms (dizziness, cold sweats, shortness of breath), while the decisive cue, \emph{Pulmonary Embolism}, is in the sample name, which M3 never reads. In the second, the same note exists in the training data as Gastroenterology, and M3 reproduces that label instead of the General Medicine of this copy. In the third, the description is dominated by anxiety and depression, so the text points to a neighbouring specialty of the Neurology record.
-
-\begin{table}[!ht]
-\centering
-\caption{Misclassified held-out records (CV-Pulm = Cardiovascular-Pulmonary, GenMed = General Medicine, Gastro = Gastroenterology, Psych = Psychiatry-Psychology).}
-\label{tab:examples}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{4.0cm}@{\hspace{4pt}}l@{\hspace{4pt}}l@{}}
-\toprule
-Description (excerpt) & True & Predicted \\
-\midrule
-``Patient felt dizzy, had some cold sweats, mild shortness of breath, \ldots lost consciousness for a few seconds.'' & CV-Pulm & GenMed \\
-``Possible free air under the diaphragm. On a chest x-ray \ldots she was found to have what was thought to be free air \ldots'' & GenMed & Gastro \\
-``Falls at home. Anxiety and depression. The patient had been increasingly anxious \ldots'' & Neurology & Psych \\
-\bottomrule
-\end{tabular}
-\end{table}
+\textbf{Errors.} All 42 errors of M4 fall on the 94 held-out records without keywords, where M3 decides alone (55.3\% accuracy); 22 of the 42 are notes listed under more than one specialty (Observation~1). Three examples illustrate these errors. In the first, a record labelled Cardiovascular-Pulmonary (CV-Pulm) describes generic symptoms, including dizziness, cold sweats, and shortness of breath, followed by a brief loss of consciousness. However, the decisive cue, \emph{Pulmonary Embolism}, appears in the sample name, which M3 never reads, leading to a General Medicine (GenMed) prediction. In the second, a record labelled General Medicine describes possible free air under the diaphragm observed on a chest X-ray, but M3 predicts Gastroenterology (Gastro) because the same note appears in the training data under that specialty. In the third, a Neurology record describes falls at home alongside anxiety and depression, with the description dominated by psychological symptoms. Consequently, M3 predicts Psychiatry-Psychology (Psych), a neighbouring specialty, instead of Neurology.
 
 \textbf{Limitations.} M4 depends on the first keyword being the specialty, which holds in all 2{,}219 training records that have keywords and in 320 of the 398 test records; it would not transfer to notes without keywords, where its accuracy falls to 55.3\%.
 
