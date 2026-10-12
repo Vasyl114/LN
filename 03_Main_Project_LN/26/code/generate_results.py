@@ -1,6 +1,6 @@
 """
-07_generate_results.py
-======================
+generate_results.py
+===================
 Writes results.txt: the predicted specialty for every record of the clean test file
 (../../StudentsPack/test_no_labels.csv), one label per line, no header, line N = record N.
 
@@ -14,7 +14,7 @@ THE SYSTEM: Model 4 = Model 3 + first keyword (see M4_final_system.py).
 
 HOW TO RUN (from 26/code/):
     python3 M3_bert_model.py --full        # about 55 minutes, saves results/m3_test_scores.npy
-    python3 07_generate_results.py         # seconds, writes ../results.txt
+    python3 generate_results.py         # seconds, writes ../results.txt
 
 The test file is only read to produce predictions. No label of it exists or is used.
 """

@@ -1,11 +1,11 @@
 """
-02_data_analysis.py
-====================
-Phase 1 — Data Analysis for Group 26 NLP Project.
+data_analysis.py
+================
+Data analysis for Group 26 NLP Project.
 
 PURPOSE:
     This script analyses the training dataset and produces:
-      - A class distribution table (printed and saved as a figure)
+      - A class distribution table (printed)
       - A text length analysis per class (printed and saved as a figure)
       - A top-words analysis for 4 selected classes
       - A count of noisy/incomplete rows
@@ -17,11 +17,10 @@ PURPOSE:
 
 HOW TO RUN:
     From the 26/code/ directory:
-        python3 02_data_analysis.py
+        python3 data_analysis.py
 
 OUTPUT FILES:
-    ../figures/fig1_class_distribution.png
-    ../figures/fig2_text_lengths.png
+    ../figures/fig1_text_lengths.png
 """
 
 import pandas as pd
@@ -78,25 +77,6 @@ print(f"\nMost common class  : {class_counts.idxmax()} ({class_counts.max()} sam
 print(f"Least common class : {class_counts.idxmin()} ({class_counts.min()} samples, {class_pct.min()}%)")
 print(f"Imbalance ratio    : {class_counts.max() / class_counts.min():.1f}:1\n")
 
-# ── Figure 1: Bar chart of class distribution ──
-fig, ax = plt.subplots(figsize=(10, 5))
-colors = ['#d62728' if v == class_counts.max() else '#1f77b4' for v in class_counts.values]
-bars = ax.barh(class_counts.index[::-1], class_counts.values[::-1], color=colors[::-1])
-
-# Add count labels on each bar
-for bar, count in zip(bars, class_counts.values[::-1]):
-    ax.text(bar.get_width() + 5, bar.get_y() + bar.get_height() / 2,
-            str(count), va='center', fontsize=9)
-
-ax.set_xlabel('Number of Samples')
-ax.set_title('Class Distribution of Training Set\n(red = majority class)')
-ax.set_xlim(0, class_counts.max() + 80)
-plt.tight_layout()
-fig_path = os.path.join(FIGURES_DIR, 'fig1_class_distribution.png')
-plt.savefig(fig_path, dpi=200)
-plt.close()
-print(f"  [SAVED] {fig_path}\n")
-
 
 # ─────────────────────────────────────────────────────────────
 # STEP 3: TEXT LENGTH ANALYSIS
@@ -131,7 +111,7 @@ print(f"\nOverall avg description length  : {df['desc_wc'].mean():.1f} words "
 print(f"Overall avg transcription length: {df.loc[has_trans, 'trans_wc'].mean():.1f} words "
       f"(median {df.loc[has_trans, 'trans_wc'].median():.0f}, non-empty rows only)\n")
 
-# ── Figure 2: Grouped bar chart of text lengths ──
+# ── Figure: grouped bar chart of text lengths ──
 fig, ax = plt.subplots(figsize=(12, 5))
 x = range(len(length_table))
 width = 0.4
@@ -147,7 +127,7 @@ ax.set_ylabel('Average Word Count')
 ax.set_title('Average Text Length per Field and Specialty')
 ax.legend()
 plt.tight_layout()
-fig_path = os.path.join(FIGURES_DIR, 'fig2_text_lengths.png')
+fig_path = os.path.join(FIGURES_DIR, 'fig1_text_lengths.png')
 plt.savefig(fig_path, dpi=200)
 plt.close()
 print(f"  [SAVED] {fig_path}\n")

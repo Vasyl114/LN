@@ -1,7 +1,7 @@
 """
-03_data_augmentation.py
-========================
-Phase 2 — Data Augmentation for Group 26 NLP Project.
+data_augmentation.py
+====================
+Data augmentation for Group 26 NLP Project.
 
 WHAT THIS DOES:
     1. Loads the original training data (repaired in memory by data_utils.py)
@@ -19,7 +19,7 @@ OUTPUT FILE (saved to the same folder as this script):
 
 HOW TO RUN:
     From the 26/code/ directory:
-        python3 03_data_augmentation.py
+        python3 data_augmentation.py
 """
 
 import pandas as pd
@@ -641,7 +641,7 @@ def main():
     full_aug.to_csv('train_augmented.csv', sep=';', quotechar='"',
                       quoting=1, index=False)
     print(f"  Saved: train_augmented.csv          ({len(full_aug)} total records)")
-    print("\nDone. Use train_augmented.csv for all model training in Phases 3–4.")
+    print("\nDone. Use train_augmented.csv to train M2, M3 and M4.")
 
 
 if __name__ == '__main__':

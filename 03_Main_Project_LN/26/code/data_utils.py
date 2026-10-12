@@ -23,7 +23,7 @@ PURPOSE:
       - the held-out records are only used to measure a model, never to train
         it and never as a source for data augmentation
 
-    ONE PROPERTY OF THE DATASET USED BY THE FINAL MODEL (measured in 02_data_analysis.py):
+    ONE PROPERTY OF THE DATASET USED BY THE FINAL MODEL (measured in data_analysis.py):
       - the first keyword is the specialty itself (100% of the records that have
         keywords). first_keyword_label() exposes it.
 
@@ -193,9 +193,5 @@ def first_keyword_label(df):
 
 
 if __name__ == '__main__':
-    # Running this file directly writes the repaired data to train_clean.csv,
-    # so the result of the repair can be inspected. The scripts do not need
-    # this file: they call load_train() themselves.
-    clean = load_train(verbose=True)
-    clean.to_csv('train_clean.csv', sep=';', quotechar='"', quoting=1, index=False)
-    print(f"  Saved: train_clean.csv ({len(clean)} records)")
+    # Running this file directly prints what the repair of train.csv does.
+    load_train(verbose=True)

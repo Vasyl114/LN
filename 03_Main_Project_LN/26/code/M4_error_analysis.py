@@ -5,7 +5,7 @@ Looks at the mistakes of Model 4 on the held-out records, for the Results and Di
 sections of the paper. No training: it reads results/m4_heldout_predictions.csv.
 
 WHAT IT DOES:
-    1. draws the confusion matrix of Model 4 (abbreviated labels) -> ../figures/fig3_confusion_matrix.png
+    1. draws the confusion matrix of Model 4 (abbreviated labels) -> ../figures/fig2_confusion_matrix.png
     2. prints the per-class precision / recall / F1 of Model 4
     3. prints the most frequent confusions, and how the errors split by kind of record
        (with / without a first keyword, with / without a copy of the note in the training portion)
@@ -56,7 +56,7 @@ def main():
                 ax.text(j, i, cm[i, j], ha='center', va='center', fontsize=6,
                         color='white' if cm[i, j] > cm.max() / 2 else 'black')
     fig.tight_layout()
-    out = os.path.join('..', 'figures', 'fig3_confusion_matrix.png')
+    out = os.path.join('..', 'figures', 'fig2_confusion_matrix.png')
     fig.savefig(out, dpi=200); plt.close(fig)
     print(f"Saved {out}\n")
 

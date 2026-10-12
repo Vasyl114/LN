@@ -13,9 +13,9 @@ WHAT IT REPORTS (on the held-out records of data_utils.split_train_heldout):
 
 WHAT IT SAVES (folder results/, next to the scripts):
     <name>.json                       metrics and the configuration of the run
-    <name>_heldout_predictions.csv    record_id, true label, predicted label
-                                      (the source for the confusion matrix and the
-                                       misclassified examples of the paper)
+    <name>_heldout_predictions.csv    only with predictions=True (Model 4): record_id, true label,
+                                      predicted label, the source of the confusion matrix and
+                                      of the misclassified examples of the paper
 """
 
 import json
@@ -30,7 +30,7 @@ MIN_CLASS_F1 = 0.25   # no per-class F1 may fall below this value
 
 
 def summarize(name, heldout_df, y_pred, config=None, train_labels=None,
-              verbose=True, per_class_table=False, save=True):
+              verbose=True, per_class_table=False, save=True, predictions=False):
     """
     Measure y_pred against the labels of heldout_df, print a summary and save it.
     train_labels (optional): labels of the training records, used only to print
@@ -84,7 +84,8 @@ def summarize(name, heldout_df, y_pred, config=None, train_labels=None,
         os.makedirs(RESULTS_DIR, exist_ok=True)
         with open(os.path.join(RESULTS_DIR, f'{name}.json'), 'w', encoding='utf-8') as f:
             json.dump(metrics, f, indent=2, ensure_ascii=False)
-        pd.DataFrame({'record_id': heldout_df.index, 'true': y_true.values, 'pred': y_pred.values}) \
-            .to_csv(os.path.join(RESULTS_DIR, f'{name}_heldout_predictions.csv'), index=False)
+        if predictions:
+            pd.DataFrame({'record_id': heldout_df.index, 'true': y_true.values, 'pred': y_pred.values}) \
+                .to_csv(os.path.join(RESULTS_DIR, f'{name}_heldout_predictions.csv'), index=False)
 
     return metrics

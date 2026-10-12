@@ -22,7 +22,7 @@ WHAT THIS DOES:
     3. Saves the held-out scores of the main Model 2 (all fields, augmented training
        file) in results/ and its metrics as results/m2.json.
 
-HOW TO RUN (from 26/code/, takes about 2 minutes):
+HOW TO RUN (from 26/code/, takes about 10 minutes):
     python3 M2_classical_model.py
 """
 

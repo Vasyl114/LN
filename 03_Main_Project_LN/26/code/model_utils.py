@@ -2,7 +2,7 @@
 model_utils.py
 ==============
 The classical model pipeline and the first-keyword rule of Group 26 NLP Project, shared by
-M2_classical_model.py (Model 2) and M4_final_system.py / 07_generate_results.py (Model 4).
+M2_classical_model.py (Model 2) and M4_final_system.py / generate_results.py (Model 4).
 
 THE MODEL (Model 2):
     TF-IDF features -> linear Support Vector Machine, class-balanced, reading ALL the

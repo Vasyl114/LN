@@ -56,7 +56,7 @@ def main():
                    config={'model': 'Bio_ClinicalBERT, description only', 'scores': 'm3_heldout_scores.npy'})
     m4_scores = add_first_keyword(m3_scores, classes, heldout_df)
     m4_pred = classes[m4_scores.argmax(1)]
-    m4 = summarize('m4', heldout_df, m4_pred, per_class_table=True, verbose=True,
+    m4 = summarize('m4', heldout_df, m4_pred, per_class_table=True, verbose=True, predictions=True,
                    config={'model': 'Model 3 + first keyword', 'keyword_weight': KEYWORD_WEIGHT})
 
     # ── Ablation: the same keyword rule on Model 2 (information only, not saved) ──
