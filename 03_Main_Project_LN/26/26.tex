@@ -37,13 +37,13 @@
 \label{sec:intro}
 % ============================================================
 
-We build and compare natural language processing models that assign a clinical text to one of 12 medical specialties, to answer the following research question:
+The aim of this project is to build and compare natural language processing models that assign clinical texts to one of 12 medical specialties to answer the following research question:
 
 \smallskip
-\noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep\relax}{\textbf{Does a fine-tuned clinical language model that reads only a little text of each record outperform a classical classifier that reads all of it?}}}
+\noindent\colorbox{black!8}{\parbox{\dimexpr\columnwidth-2\fboxsep\relax}{\textbf{Does a fine-tuned clinical language model that reads only a fraction of each record outperform a classical classifier that reads all of it?}}}
 \smallskip
 
-To answer it, we analyse the data (Section~\ref{sec:analysis}) and balance the classes through augmentation (Section~\ref{sec:augmentation}); starting from the baseline, we develop progressively better models (Section~\ref{sec:models}), compare them on held-out data (Section~\ref{sec:setup}) and study their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
+To answer it, we analyse the given data (Section~\ref{sec:analysis}) and balance the classes through augmentation (Section~\ref{sec:augmentation}); starting from the baseline, we develop progressively better models (Section~\ref{sec:models}), compare them on held-out data (Section~\ref{sec:setup}) and study their errors (Sections~\ref{sec:results} and~\ref{sec:discussion}).
 
 % ============================================================
 \section{Data}
@@ -53,7 +53,7 @@ To answer it, we analyse the data (Section~\ref{sec:analysis}) and balance the c
 \subsection{Data Analysis}
 \label{sec:analysis}
 
-\textbf{Dataset.} Each record, adapted from a public Kaggle dataset~\cite{kaggle}, has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} and \texttt{keywords}. Descriptions are short (19 words on average) and transcriptions long (457 words; Figure~\ref{fig:text_lengths}, Appendix A).
+\textbf{Dataset.} Each record, adapted from a public Kaggle dataset~\cite{kaggle}, has five fields: \texttt{medical\_specialty} (the label, 12 classes), \texttt{description}, \texttt{sample\_name}, \texttt{transcription} and \texttt{keywords}. In \texttt{train.csv}, seven rows have a description that swallowed the records that follow; we split them back, giving 2{,}669 records. Descriptions are short (19 words on average) and transcriptions long (457 words; Figure~\ref{fig:text_lengths}, Appendix A).
 
 \textbf{Class distribution.} Table~\ref{tab:class_dist} shows a strong imbalance, from Surgery with 893 records to Dermatology with 25 (about 36:1), which biases classifiers towards the frequent classes~\cite{imbalance_survey}.
 
@@ -77,14 +77,14 @@ Gastroenterology         & 195 & Dermatology           &  25 \\
 \end{tabular}
 \end{table}
 
-\textbf{Observation 1 --- the same note appears under several specialties.} 731 of the 1{,}838 distinct transcriptions are listed under more than one label (1{,}530 records, 57\%), always with the same description and sample name. For these records, the text cannot determine the label.
+\textbf{Observation 1 --- the same note appears under several specialties.} 731 of the 1{,}838 distinct transcriptions are listed under more than one label (1{,}530 records, 57\%), always with the same description and sample name. This shows that some fields are common among specialties, which can be misleading.
 
-\textbf{Observation 2 --- the label is written in the keywords.} In all 2{,}219 records that have keywords, the first keyword is the specialty itself, so keywords are the only field that separates the copies of Observation~1. The other 450 records have none.
+\textbf{Observation 2 --- the label is written in the keywords.} In all 2{,}219 records that have keywords, the first keyword is the specialty itself. This could be used as a shortcut for model training, taking advantage of how the dataset was built. The other 450 records have none.
 
 \subsection{Data Augmentation}
 \label{sec:augmentation}
 
-To counter the imbalance (Section~\ref{sec:analysis}), we enlarged every class below 400 records with rule-based synthetic records, with no language model involved. Each new record applies one of 15 variants inspired by \ac{eda}~\cite{wei2019eda}, combining synonym replacement (a clinical term map and WordNet~\cite{miller1995wordnet}), word and sentence deletion, adjacent-word swaps, abbreviation expansion and number rewriting. Keywords after the first are subsampled and shuffled; negations, laterality, numbers and dosages are never altered. This added 2{,}979 records, raising the training file to 5{,}648 and reducing the ratio between the largest and the smallest class from about 36:1 to 2:1.
+To counter the imbalance (Section~\ref{sec:analysis}), we enlarged every class below 400 records with rule-based synthetic records. Each new record applies one of 15 variants inspired by \ac{eda}~\cite{wei2019eda}, combining synonym replacement (a clinical term map and WordNet~\cite{miller1995wordnet}), word and sentence deletion, adjacent-word swaps, abbreviation expansion and number rewriting. Keywords after the first are subsampled and shuffled; negations, laterality, numbers and dosages are never altered. This added 2{,}979 records, raising the training file to 5{,}648 and reducing the ratio between the largest and the smallest class from about 36:1 to 2:1.
 
 % ============================================================
 \section{Models}
@@ -106,7 +106,7 @@ We develop models step by step to beat the teachers' baseline (above 49\% accura
 \label{sec:setup}
 % ============================================================
 
-\textbf{Datasets.} M1 was trained on the given \texttt{train.csv} (corrupted rows repaired), M2 to M4 on its augmented version (Section~\ref{sec:augmentation}).
+\textbf{Datasets.} M1 was trained on the given \texttt{train.csv}, M2 to M4 on its augmented version (Section~\ref{sec:augmentation}).
 
 \textbf{Splits.} 80\% of the original records are used for training and 20\% (534) are held out, stratified and fixed by seed 42, so runs are comparable; augmentation is applied afterwards, to the training part only. \texttt{results.txt} comes from M4 trained on all the records; the given test file was used for nothing else.
 
@@ -126,9 +126,9 @@ Hyperparameters are set before training, unlike parameters, which are learned. T
 \toprule
 M1 & Description. Lowercase, Porter stemmer; \ac{tfidf}, \ac{mnb}; library defaults. \\
 M2 & Description, sample name, transcription, keywords. \ac{tfidf}: 1--2 words (CV), terms in $\geq$2 records, at most 150{,}000 terms, $1+\log tf$. Linear \ac{svm}, $C=250$ (CV; higher = tighter fit), balanced class weights. \\
-M3 & Description, cut at 128 tokens. Bio\_ClinicalBERT (revision \texttt{d5892b3}) + linear layer, cross-entropy. AdamW, learning rate $3\!\times\!10^{-5}$, weight decay 0.01 (penalty on large weights), 10\% warm-up (rate grows from 0) then linear decay, gradient clipping 1.0, batch 16, 3 epochs. \\
+M3 & Description, cut at 128 tokens. Bio\_ClinicalBERT (release pinned in the code) + linear layer, cross-entropy. AdamW, learning rate $3\!\times\!10^{-5}$, weight decay 0.01 (penalty on large weights), 10\% warm-up (rate grows from 0) then linear decay, gradient clipping 1.0, batch 16, 3 epochs. \\
 M4 & M3 log-probabilities standardised per record (mean 0, deviation 1), plus 5 (fixed) for the specialty of the first keyword. \\
-All & Seed 42, Python 3.10; library versions in \texttt{requirements.txt}. \\
+All & Seed 42, Python 3.10; library versions in \texttt{code/requirements.txt}. \\
 \bottomrule
 \end{tabular}
 \end{table}

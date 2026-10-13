@@ -2,7 +2,7 @@
 generate_results.py
 ===================
 Writes results.txt: the predicted specialty for every record of the clean test file
-(../../StudentsPack/test_no_labels.csv), one label per line, no header, line N = record N.
+(test_no_labels.csv), one label per line, no header, line N = record N.
 
 THE SYSTEM: Model 4 = Model 3 + first keyword (see M4_final_system.py).
     Model 3 is Bio_ClinicalBERT fine-tuned on the description only, here trained on the

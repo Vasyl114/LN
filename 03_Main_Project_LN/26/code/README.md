@@ -4,6 +4,10 @@ Python 3.10, CPU only. Install: `pip install -r requirements.txt` and
 `pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu`.
 Run every script from this folder. Every script is seeded (42) and documents itself in its header.
 
+**Data.** `train.csv` and `test_no_labels.csv` (given by the teachers) are read from `data/` next to the scripts, or from `../../StudentsPack/` if that folder exists. `train_augmented.csv` is the augmented training set (step 2 regenerates it identically).
+**Internet** is needed once: M3 downloads Bio_ClinicalBERT (the exact release is pinned in `M3_bert_model.py`) and M1 downloads the NLTK tokenizer data.
+**Output folders** (`../figures/`) are created when missing; `../results.txt` is written next to `code/`.
+
 | Step | Command | Time | Output |
 |---|---|---|---|
 | 1 | `python3 data_analysis.py` | seconds | statistics, `../figures/fig1_text_lengths.png` |

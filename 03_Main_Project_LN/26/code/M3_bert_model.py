@@ -42,7 +42,7 @@ HOW TO RUN (from 26/code/):
                                               # train_augmented.csv and saves the scores of the 398 test
                                               # records (results/m3_test_scores.npy), about 55 minutes
     python3 M3_bert_model.py --smoke          # 1 minute check that everything works, saves nothing
-    python3 M3_bert_model.py --train ../../StudentsPack/train.csv   # original data only
+    python3 M3_bert_model.py --train /path/to/train.csv   # original data only
 """
 
 import argparse
@@ -50,6 +50,7 @@ import json
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 import random
+import tempfile
 import time
 import numpy as np
 import pandas as pd
@@ -206,7 +207,7 @@ def main():
 
     # ── Report the model after the last epoch ──
     if args.smoke:      # same code path as a real run, but written to a scratch folder
-        evaluation.RESULTS_DIR = os.path.join('/tmp', 'm3_smoke_results')
+        evaluation.RESULTS_DIR = os.path.join(tempfile.gettempdir(), 'm3_smoke_results')
     os.makedirs(evaluation.RESULTS_DIR, exist_ok=True)
     if args.full:
         np.save(os.path.join(evaluation.RESULTS_DIR, 'm3_test_scores.npy'), scores)

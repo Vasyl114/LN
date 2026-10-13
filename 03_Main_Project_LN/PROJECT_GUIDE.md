@@ -115,7 +115,8 @@
     ├── figures/                   fig1_text_lengths.png, fig2_confusion_matrix.png (both in Appendix A)
     ├── results.txt                398 predicted labels, made by code/generate_results.py (M4)
     └── code/
-        ├── README.md              run order and times
+        ├── README.md              run order, times, where the data is read from
+        ├── data/                  NOT in the repository: created only inside the zip (copy of the two given CSVs)
         ├── requirements.txt       pinned versions
         ├── data_utils.py          loading, in-memory repair of train.csv, split, first keyword
         ├── evaluation.py          the one evaluation (accuracy, macro-F1, per-class F1)
@@ -132,7 +133,7 @@
                                    m2_input_ablation.csv, m4_heldout_predictions.csv, summary_table.csv
 ```
 
-The zip holds only `26.pdf`, `results.txt` and `code/` (without `__pycache__`). `26.tex`, `biblio.bib` and `figures/` stay in the repository. `results/` is kept in `code/` so that M4 and the paper's numbers can be reproduced without the 50-minute BERT run.
+The zip holds only `26.pdf`, `results.txt` and `code/` (without `__pycache__`). The teacher sees nothing else: no git, no `StudentsPack/`, no guide. The code therefore reads `train.csv` and `test_no_labels.csv` from `code/data/` first and from `../../StudentsPack/` second (`data_utils.find_data_file`), and creates `../figures/` when missing. Packaging: copy `26/` to a scratch folder, compile `26.pdf` there, add `code/data/` with the two given CSVs, delete `__pycache__`, then zip `26.pdf`, `results.txt`, `code/` from that folder as `26.zip`. Check by unzipping into an empty folder and running `M4_final_system.py` and `generate_results.py` (both reproduce exactly; verified on 2026-10-13). `26.tex`, `biblio.bib` and `figures/` stay in the repository. `results/` is kept in `code/` so that M4 and the paper's numbers can be reproduced without the 50-minute BERT run.
 
 Compile the paper (the `tectonic` engine is at `~/.local/bin/tectonic`; `pdflatex` is not installed): copy `26.tex`, `biblio.bib` and `figures/` to a scratch folder and run `~/.local/bin/tectonic -X compile 26.tex`, or use Overleaf.
 
@@ -140,9 +141,10 @@ Compile the paper (the `tectonic` engine is at `~/.local/bin/tectonic`; `pdflate
 
 ## 6. The paper (`26/26.tex`) — state and writing agreements
 
-**State (2026-10-12):** all sections written. Compiled with tectonic: body ends on page 3 with about 4 lines to spare, bibliography on page 4, Appendix A alone on page 5 (`\clearpage` before it). Floats: Table 1 class distribution (2 blocks), Table 2 configuration of each model, Table 3 results; appendix: Figure 1 text lengths, Table 4 results by label of M4, Figure 2 confusion matrix. Citations: Kaggle (no year, prints "nd"), He and Garcia, scikit-learn, Transformers, Bio_ClinicalBERT, NLTK, EDA, WordNet, PyTorch. The LLM declaration (Claude through Claude Code as coding and writing assistant; the group defined the question, chose the models and checked results) sits under "Bibliography".
+**State (2026-10-13):** all sections written; the group edited the Introduction and Observations 1 and 2 on 2026-10-12 (kept as is). Compiled with tectonic: body ends on page 3 with about 4 lines to spare, bibliography on page 4, Appendix A alone on page 5 (`\clearpage` before it). Floats: Table 1 class distribution (2 blocks), Table 2 configuration of each model, Table 3 results; appendix: Figure 1 text lengths, Table 4 results by label of M4, Figure 2 confusion matrix. Citations: Kaggle (no year, prints "nd"), He and Garcia, scikit-learn, Transformers, Bio_ClinicalBERT, NLTK, EDA, WordNet, PyTorch. The LLM declaration (Claude through Claude Code as coding and writing assistant; the group defined the question, chose the models and checked results) sits under "Bibliography".
 
 **Agreements:**
+- **Self-contained paper:** the reader has only `26.pdf`, `results.txt` and `code/`. Do not cite git hashes, repository paths, Hugging Face revision hashes or files outside the zip; point to files inside the zip with their `code/` path (for example `code/requirements.txt`). Explain every number the reader cannot derive from the given CSVs (for example the 2,669 records versus the 2,616 rows pandas parses).
 - No mixing of content between sections: split details only in Experimental Setup; no examples inside the augmentation text; interpretation in Discussion, facts in Results.
 - Replicability lives in Table 2 only; the model paragraphs give the reasons, not the numbers.
 - Honest reporting: the keyword dependence is a stated limitation; the comparison row shows the keyword explains most of the gap.
@@ -163,9 +165,9 @@ Compile the paper (the `tectonic` engine is at `~/.local/bin/tectonic`; `pdflate
 
 ## 8. What is left (as of 2026-10-12)
 
-1. Compile once in Overleaf and confirm the body still ends on page 3 (tectonic and pdflatex may break lines differently; slack is about 4 lines).
+1. Compile once in Overleaf and confirm the body still ends on page 3 (tectonic and pdflatex may break lines differently; slack is only about 2 lines, so any addition needs a cut).
 2. The group checks the wording of the LLM declaration and the Kaggle reference.
 3. Final proofreading: typos, contractions, every figure and table cited.
-4. Build `26.pdf`, then `26.zip` with `26.pdf`, `results.txt` and `code/` only; check the zip opens and `results.txt` has 398 lines.
+4. Build `26.pdf`, then `26.zip` as described in section 5; check the zip opens, `results.txt` has 398 lines and the code runs from the unzipped folder.
 5. Check Fenix for FAQs, then submit before the deadline.
 6. Prepare for the oral discussion: each member can explain Sections 2–4 above.

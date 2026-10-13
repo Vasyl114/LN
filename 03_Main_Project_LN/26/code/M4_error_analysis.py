@@ -56,6 +56,7 @@ def main():
                 ax.text(j, i, cm[i, j], ha='center', va='center', fontsize=6,
                         color='white' if cm[i, j] > cm.max() / 2 else 'black')
     fig.tight_layout()
+    os.makedirs(os.path.join('..', 'figures'), exist_ok=True)
     out = os.path.join('..', 'figures', 'fig2_confusion_matrix.png')
     fig.savefig(out, dpi=200); plt.close(fig)
     print(f"Saved {out}\n")

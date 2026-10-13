@@ -29,7 +29,7 @@
     "model": "MultinomialNB + TfidfVectorizer (defaults)",
     "input": "description",
     "preprocessing": "lowercase + PorterStemmer",
-    "training_file": "../../StudentsPack/train.csv",
+    "training_file": "train.csv",
     "training_records": 2135
   }
 }

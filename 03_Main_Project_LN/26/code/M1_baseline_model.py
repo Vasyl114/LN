@@ -101,7 +101,7 @@ def main():
     name = 'm1_baseline_' + ('original' if data_path == TRAIN_PATH else os.path.splitext(os.path.basename(data_path))[0])
     summarize(name, heldout_df, y_pred, per_class_table=True, train_labels=y_train,
               config={'model': 'MultinomialNB + TfidfVectorizer (defaults)', 'input': 'description',
-                      'preprocessing': 'lowercase + PorterStemmer', 'training_file': data_path,
+                      'preprocessing': 'lowercase + PorterStemmer', 'training_file': os.path.basename(data_path),
                       'training_records': int(len(train_df))})
 
 

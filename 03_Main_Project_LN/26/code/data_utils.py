@@ -34,12 +34,25 @@ HOW TO USE:
 """
 
 import csv
+import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-TRAIN_PATH   = '../../StudentsPack/train.csv'
-TEST_PATH    = '../../StudentsPack/test_no_labels.csv'   # clean test set published by the teachers (2026-10-09)
+# The two files given by the teachers are looked for next to the scripts (data/, the layout of the
+# submitted zip) and in StudentsPack/ (the layout of the project folder).
+DATA_FOLDERS = ['data', '../../StudentsPack', '../StudentsPack']
+
+
+def find_data_file(name):
+    """Path of a file given by the teachers; if it is not found, the path where it is expected."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    paths = [os.path.join(here, folder, name) for folder in DATA_FOLDERS]
+    return next((p for p in paths if os.path.exists(p)), paths[0])
+
+
+TRAIN_PATH   = find_data_file('train.csv')
+TEST_PATH    = find_data_file('test_no_labels.csv')   # clean test set published by the teachers (2026-10-09)
 RANDOM_SEED  = 42
 HELDOUT_SIZE = 0.20   # Share of the original records kept aside for evaluation
 

@@ -13,7 +13,7 @@ PURPOSE:
         (notes listed under several specialties, label inside the keywords)
 
     All numbers printed here are the raw material for the
-    "Data Analysis" subsection of the paper (26.tex).
+    "Data Analysis" subsection of the paper.
 
 HOW TO RUN:
     From the 26/code/ directory:
@@ -260,5 +260,4 @@ print()
 print("=" * 60)
 print("DATA ANALYSIS COMPLETE")
 print(f"Figures saved to: {os.path.abspath(FIGURES_DIR)}")
-print("Use the numbers above to verify/update the values in 26.tex")
 print("=" * 60)
