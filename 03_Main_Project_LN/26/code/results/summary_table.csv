@@ -1,6 +1,0 @@
-model,accuracy_%,macro_f1_%,lowest_class_f1_%,lowest_class
-M1 baseline,38.76,13.66,0.0,Dermatology
-"M2 classical, all fields",86.33,81.55,50.0,Dermatology
-"M3 language model, description",48.88,51.01,20.78,Radiology
-M4 = M3 + first keyword,92.13,89.58,70.0,Psychiatry-Psychology
-ablation: M2 + first keyword,89.14,87.23,75.0,General Medicine
