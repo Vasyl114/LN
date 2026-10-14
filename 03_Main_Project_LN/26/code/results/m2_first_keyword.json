@@ -1,0 +1,32 @@
+{
+  "name": "m2_first_keyword",
+  "n_heldout": 534,
+  "accuracy": 0.8913857677902621,
+  "macro_f1": 0.8722974111162118,
+  "lowest_class_f1": 0.75,
+  "lowest_class": "General Medicine",
+  "classes_below_min_f1": 0,
+  "classes_never_predicted": 0,
+  "per_class_f1": {
+    "Cardiovascular-Pulmonary": 0.864406779661017,
+    "Dermatology": 0.8888888888888888,
+    "Gastroenterology": 0.8333333333333334,
+    "General Medicine": 0.75,
+    "Neurology": 0.8333333333333334,
+    "Neurosurgery": 0.9375,
+    "Obstetrics-Gynecology": 0.875,
+    "Ophthalmology": 0.9655172413793104,
+    "Orthopedic": 0.9166666666666666,
+    "Psychiatry-Psychology": 0.75,
+    "Radiology": 0.9069767441860465,
+    "Surgery": 0.9459459459459459
+  },
+  "automatic_evaluation": {
+    "accuracy_above_49": true,
+    "no_class_f1_below_25": true
+  },
+  "config": {
+    "model": "Model 2 + first keyword (comparison row)",
+    "keyword_weight": 5.0
+  }
+}

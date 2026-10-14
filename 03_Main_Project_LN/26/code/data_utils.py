@@ -1,36 +1,20 @@
 """
-data_utils.py
-=============
-Shared data loading and splitting for Group 26 NLP Project.
+data_utils.py: loading, repair and splitting of the data, shared by every script.
 
-PURPOSE:
-    Every script must work on exactly the same records and on exactly the
-    same split, so both live here and are imported by the other scripts.
+The given CSV files are never modified. Seven rows of train.csv have a description cell that swallowed
+the records that followed it; load_train() repairs them in memory (2,616 parsed rows become 2,669 records):
+the first line of the cell stays as that row's description, every other line becomes a record again, and a
+record cut in two is rejoined with its tail.
 
-    The file given by the professors is never modified. It contains 7 rows
-    whose 'description' cell absorbed the records that followed it (an opening
-    quote that only closes several lines later). Three of those cells are cut
-    at 32,759 characters and the rest of the cut record spills into the next
-    row. load_train() repairs this in memory:
-      - the first line of the cell stays as that row's description
-      - every absorbed line becomes a record of its own again
-      - a cut record is rejoined with its tail (one character is lost at the join)
+Functions:
+    find_data_file         locate train.csv / test_no_labels.csv (code/data/ or StudentsPack/)
+    load_train, load_test  read the two given files (the test file has no header and no labels)
+    split_train_heldout    stratified 80/20 split with seed 42 (534 held-out records)
+    remove_heldout         drop the held-out records from a training file
+    first_keyword_label    specialty named by the first keyword of each record ('none' if there is none)
 
-    THE SPLIT (split_train_heldout):
-      - the original records are divided once: 80% for training, 20% held out
-      - the division is stratified: every specialty keeps its proportion
-      - the random seed is fixed, so the split is identical in every script
-      - the held-out records are only used to measure a model, never to train
-        it and never as a source for data augmentation
-
-    ONE PROPERTY OF THE DATASET USED BY THE FINAL MODEL (measured in data_analysis.py):
-      - the first keyword is the specialty itself (100% of the records that have
-        keywords). first_keyword_label() exposes it.
-
-HOW TO USE:
-    from data_utils import load_train, split_train_heldout
-    df = load_train()
-    train_df, heldout_df = split_train_heldout(df)
+The held-out records only measure a model: they never train it and never source augmentation.
+Run `python3 data_utils.py` to print what the repair of train.csv does.
 """
 
 import csv

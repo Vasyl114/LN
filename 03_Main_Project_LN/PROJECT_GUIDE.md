@@ -98,8 +98,8 @@
 - **M1:** description; NLTK `word_tokenize`, lowercase, Porter stemmer; `TfidfVectorizer()` and `MultinomialNB()` defaults; original training portion.
 - **M2:** fields joined with a space; TF-IDF 1–2 words, `min_df` 2, 150,000 features, sublinear tf; `LinearSVC` with C=250, `class_weight='balanced'`, seed 42. C and the n-gram range were chosen by 5-fold stratified CV on the original training portion (macro-F1) over n-grams {(1,1),(1,2)} and C {0.1, 0.5, 2, 10, 50, 250}. Trained on the augmented training portion.
 - **M3:** `emilyalsentzer/Bio_ClinicalBERT` revision `d5892b39a4adaed74b92212a44081509db72f87b` plus the standard linear classification head; input description cut at 128 tokens; AdamW lr 3e-5, weight decay 0.01, 10% warm-up then linear decay, gradient clipping 1.0, batch 16, 3 epochs, plain cross-entropy (the augmented data is already balanced), length-bucketed batches (50 batches per bucket), 4 CPU threads, seed 42; the model after the last epoch is used. All hyperparameters fixed in advance from the usual BERT range; nothing tuned on the held-out set.
-- **M4:** M3 log-probabilities standardised per record (mean 0, standard deviation 1) plus 5.0 on the class named by the first keyword (`KEYWORD_WEIGHT`, fixed in advance). For `results.txt` M3 is trained on all 5,648 records (`--full`).
-- **Reproducibility check (2026-10-12):** M1, M2, M4, error analysis, augmentation and `results.txt` reproduce exactly; M3 reproduces the same predicted labels (raw scores differ by at most 0.003 from CPU float order). `M3_bert_model.py --smoke` runs.
+- **M4:** M3 log-probabilities standardised per record (mean 0, standard deviation 1) plus 5.0 on the class named by the first keyword (`KEYWORD_WEIGHT`, fixed in advance). For `results.txt` M3 is trained on all 5,648 records (`M3_bert_model.py --test`, then `M4_final_system.py --test`).
+- **Reproducibility check (2026-10-12):** M1, M2, M4, error analysis, augmentation and `results.txt` reproduce exactly; M3 reproduces the same predicted labels (raw scores differ by at most 0.003 from CPU float order). `M3_bert_model.py --smoke` runs. After the code reorganisation of 2026-10-14 (each model script holds its own model; shared code in `model_utils.py`) every result file, `results.txt` and the confusion matrix were checked byte-identical, and the smoke runs give identical scores.
 
 ---
 
@@ -113,27 +113,26 @@
 └── 26/                            our work; the zip is built from here
     ├── 26.tex, biblio.bib         the paper source
     ├── figures/                   fig1_text_lengths.png, fig2_confusion_matrix.png (both in Appendix A)
-    ├── results.txt                398 predicted labels, made by code/generate_results.py (M4)
+    ├── results.txt                398 predicted labels, made by `code/M4_final_system.py --test`
     └── code/
         ├── README.md              run order, times, where the data is read from
         ├── data/                  NOT in the repository: created only inside the zip (copy of the two given CSVs)
         ├── requirements.txt       pinned versions
         ├── data_utils.py          loading, in-memory repair of train.csv, split, first keyword
-        ├── evaluation.py          the one evaluation (accuracy, macro-F1, per-class F1)
-        ├── model_utils.py         M2 pipeline and the keyword rule of M4
+        ├── model_utils.py         shared, not a model: the one evaluation (summarize), save/load of score tables, writing results.txt, BERT helpers
         ├── data_analysis.py       statistics and the numbers of the two observations; draws fig1
         ├── data_augmentation.py   writes train_augmented.csv
         ├── M1_baseline_model.py, M2_classical_model.py, M3_bert_model.py
-        ├── M4_final_system.py     M3 + keyword and the model table (no training)
+        ├── M4_final_system.py     M4 = M3 + keyword rule, no training: default = held-out evaluation, --test = writes results.txt
+        ├── summary_table.py       reads the results/*.json and writes summary_table.csv
         ├── M4_error_analysis.py   confusion matrix (fig2), per-class report, error breakdown, examples
-        ├── generate_results.py    writes ../results.txt
         ├── train_augmented.csv    5,648 records (19 MB), the exact training data; regenerable
         └── results/               small outputs the later scripts read: m1/m2/m3/m4 json, m2_config.json,
                                    m2_heldout_scores.npy, m3_heldout_scores.npy, m3_test_scores.npy,
-                                   m2_input_ablation.csv, m4_heldout_predictions.csv, summary_table.csv
+                                   m2_input_ablation.csv, m2_first_keyword.json, m4_heldout_predictions.csv, summary_table.csv
 ```
 
-The zip holds only `26.pdf`, `results.txt` and `code/` (without `__pycache__`). The teacher sees nothing else: no git, no `StudentsPack/`, no guide. The code therefore reads `train.csv` and `test_no_labels.csv` from `code/data/` first and from `../../StudentsPack/` second (`data_utils.find_data_file`), and creates `../figures/` when missing. Packaging: copy `26/` to a scratch folder, compile `26.pdf` there, add `code/data/` with the two given CSVs, delete `__pycache__`, then zip `26.pdf`, `results.txt`, `code/` from that folder as `26.zip`. Check by unzipping into an empty folder and running `M4_final_system.py` and `generate_results.py` (both reproduce exactly; verified on 2026-10-13). `26.tex`, `biblio.bib` and `figures/` stay in the repository. `results/` is kept in `code/` so that M4 and the paper's numbers can be reproduced without the 50-minute BERT run.
+The zip holds only `26.pdf`, `results.txt` and `code/` (without `__pycache__`). The teacher sees nothing else: no git, no `StudentsPack/`, no guide. The code therefore reads `train.csv` and `test_no_labels.csv` from `code/data/` first and from `../../StudentsPack/` second (`data_utils.find_data_file`), and creates `../figures/` when missing. Packaging: copy `26/` to a scratch folder, compile `26.pdf` there, add `code/data/` with the two given CSVs, delete `__pycache__`, then zip `26.pdf`, `results.txt`, `code/` from that folder as `26.zip`. Check by unzipping into an empty folder and running `M4_final_system.py` and `M4_final_system.py --test` (both reproduce exactly; verified on 2026-10-13). `26.tex`, `biblio.bib` and `figures/` stay in the repository. `results/` is kept in `code/` so that M4 and the paper's numbers can be reproduced without the 50-minute BERT run.
 
 Compile the paper (the `tectonic` engine is at `~/.local/bin/tectonic`; `pdflatex` is not installed): copy `26.tex`, `biblio.bib` and `figures/` to a scratch folder and run `~/.local/bin/tectonic -X compile 26.tex`, or use Overleaf.
 
