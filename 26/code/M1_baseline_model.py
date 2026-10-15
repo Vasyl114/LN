@@ -1,32 +1,10 @@
 """
-M1_baseline_model.py
-====================
-Baseline model for Group 26 NLP Project.
+M1_baseline_model.py: baseline, the weak reference model of the project statement.
 
-WHAT THIS IS:
-    The weak baseline described in the project statement, and nothing else:
-      - input         : the 'description' field only
-      - preprocessing : lowercasing and stemming (Porter stemmer)
-      - features      : TF-IDF
-      - classifier    : Multinomial Naive Bayes
-    Everything the statement does not mention is left at the library default
-    (no stop-word removal, no n-grams, no class weights, no tuning).
-
-HOW IT IS EVALUATED:
-    1. The original records are divided once into a training portion (80%)
-       and a held-out portion (20%), keeping the proportion of each specialty.
-       The division is always the same (see split_train_heldout() in data_utils.py).
-    2. The model is trained on the given dataset WITHOUT the held-out records.
-    3. The model is measured on the held-out records, which are always
-       original records (never augmented ones).
-    test_no_labels.csv is not used here.
-
-HOW TO RUN:
-    From the 26/code/ directory:
-        python3 M1_baseline_model.py                        # original training data
-        python3 M1_baseline_model.py train_augmented.csv    # any other training file
-    The training file must have the same five columns as train.csv.
-    Results are also saved in results/ (see evaluation.py).
+Model:   description only; lowercase + Porter stemming; TF-IDF; Multinomial Naive Bayes (library defaults).
+Reads:   train.csv, without the 534 held-out records.
+Writes:  results/m1_baseline_original.json (metrics on the held-out records).
+Run:     python3 M1_baseline_model.py [training_file.csv]        (about 20 s)
 """
 
 import os
@@ -38,9 +16,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
 from data_utils import load_train, split_train_heldout, remove_heldout, TRAIN_PATH
-from evaluation import summarize
+from model_utils import summarize
 
-# Download NLTK data for tokenization (only needed the first time)
+# NLTK tokenizer data (downloaded on first use)
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
 
@@ -48,9 +26,7 @@ stemmer = PorterStemmer()
 
 
 def preprocess_text(text):
-    """
-    Applies lowercasing and stemming to a given text.
-    """
+    """Lowercase, tokenize and stem a text (empty for missing values)."""
     if not isinstance(text, str):
         return ""
     tokens = word_tokenize(text.lower())
@@ -58,13 +34,13 @@ def preprocess_text(text):
 
 
 def main():
-    # Allow passing a different training file via terminal
+    # An optional argument replaces the training file
     data_path = sys.argv[1] if len(sys.argv) > 1 else TRAIN_PATH
     if not os.path.exists(data_path):
         print(f"Error: Could not find {data_path}.")
         sys.exit(1)
 
-    # ── Data: fixed held-out portion, training on everything else ──
+    # ── Data: the fixed held-out portion is removed from the training file ──
     original_df = load_train()
     _, heldout_df = split_train_heldout(original_df)
 
@@ -80,13 +56,12 @@ def main():
     print(f"  Training on                : {len(train_df)} records")
     print(f"  Evaluating on (held-out)   : {len(heldout_df)} original records\n")
 
-    # ── Preprocessing: lowercasing and stemming ──
+    # ── Preprocessing ──
     X_train = train_df['description'].apply(preprocess_text)
     y_train = train_df['medical_specialty']
     X_heldout = heldout_df['description'].apply(preprocess_text)
-    y_heldout = heldout_df['medical_specialty']
 
-    # ── Features: TF-IDF (vocabulary learned from the training records only) ──
+    # ── Features: TF-IDF, vocabulary learned from the training records only ──
     vectorizer = TfidfVectorizer()
     X_train_tfidf = vectorizer.fit_transform(X_train)
     X_heldout_tfidf = vectorizer.transform(X_heldout)
@@ -96,9 +71,10 @@ def main():
     model.fit(X_train_tfidf, y_train)
     y_pred = model.predict(X_heldout_tfidf)
 
-    # ── Results (same evaluation as every other model, see evaluation.py) ──
+    # ── Results (same evaluation as every model, see model_utils.summarize) ──
     print("Results per specialty:")
-    name = 'm1_baseline_' + ('original' if data_path == TRAIN_PATH else os.path.splitext(os.path.basename(data_path))[0])
+    source = 'original' if data_path == TRAIN_PATH else os.path.splitext(os.path.basename(data_path))[0]
+    name = f'm1_baseline_{source}'
     summarize(name, heldout_df, y_pred, per_class_table=True, train_labels=y_train,
               config={'model': 'MultinomialNB + TfidfVectorizer (defaults)', 'input': 'description',
                       'preprocessing': 'lowercase + PorterStemmer', 'training_file': os.path.basename(data_path),

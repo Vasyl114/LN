@@ -1,45 +1,28 @@
 """
-data_augmentation.py
-====================
-Data augmentation for Group 26 NLP Project.
+data_augmentation.py: rule-based augmentation of the minority classes (no language model).
 
-WHAT THIS DOES:
-    1. Loads the original training data (repaired in memory by data_utils.py)
-    2. Creates a held-out development set (from original data only)
-    3. Evaluates a reference model on that dev set BEFORE augmentation
-    4. Generates augmented records for every class below TARGET_COUNT,
-       using 15 text transformation variants. Records are generated only
-       from the training portion, never from the development set.
-    5. Evaluates the same model on the same dev set AFTER augmentation
-    6. Prints a summary and the class distribution before and after
-    7. Saves the output file
-
-OUTPUT FILE (saved to the same folder as this script):
-    train_augmented.csv   -- all original records + the augmented records
-
-HOW TO RUN:
-    From the 26/code/ directory:
-        python3 data_augmentation.py
+What it does: every class below TARGET_COUNT (400) is enlarged with synthetic records. Each one applies one of
+         15 variants inspired by EDA (synonyms from a clinical term map and WordNet, word and sentence
+         deletion, adjacent-word swaps, filler removal, abbreviation expansion, number rewriting). The first
+         keyword is kept; negations, laterality, numbers and dosages are never altered. Records are generated
+         only from the training portion of the split, never from the held-out records.
+Reads:   train.csv. Downloads the WordNet data on first use.
+Writes:  train_augmented.csv in this folder: all 2,669 original records plus the 2,979 synthetic ones.
+Run:     python3 data_augmentation.py        (about 25 s; the output is identical every time)
 """
 
 import pandas as pd
 import numpy as np
 import random
 import re
-import os
 import nltk
 from nltk.corpus import wordnet
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
 
 from data_utils import load_train, split_train_heldout, RANDOM_SEED
 
-# Download required NLTK data (only runs once)
+# WordNet data (downloaded on first use)
 nltk.download('wordnet', quiet=True)
 nltk.download('omw-1.4', quiet=True)
-nltk.download('punkt', quiet=True)
-nltk.download('punkt_tab', quiet=True)
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURATION
@@ -49,9 +32,8 @@ MAX_CYCLES   = 100   # Stop guard: maximum passes over the records of one class
 
 # ─────────────────────────────────────────────────────────────
 # MEDICAL SYNONYM MAP
-# Curated pairs of clinically equivalent terms.
-# Safer than raw WordNet for medical text — we never swap a medical
-# procedure name for something incorrect.
+# Curated clinical synonyms, tried before WordNet so that a medical term is never
+# replaced by something incorrect.
 # ─────────────────────────────────────────────────────────────
 MEDICAL_SYNONYMS = {
     'patient':      ['individual', 'subject', 'person'],
@@ -123,7 +105,7 @@ NUMBER_TO_WORD = {
 
 
 # ─────────────────────────────────────────────────────────────
-# HELPER: Identify medical terms that must never be modified
+# Words that must never be modified
 # ─────────────────────────────────────────────────────────────
 def is_protected(word):
     """
@@ -150,7 +132,6 @@ def is_protected(word):
 # ─────────────────────────────────────────────────────────────
 # AUGMENTATION FUNCTIONS
 # ─────────────────────────────────────────────────────────────
-
 def synonym_replace(text, ratio=0.10, seed=42):
     """
     Replace ~ratio of replaceable words with clinical synonyms.
@@ -342,7 +323,7 @@ def get_clean_variants(seed_base=RANDOM_SEED):
     """
     s = seed_base
     return [
-        # ── Synonym-based (beneficial) ──
+        # ── Synonym-based ──
         {'name': 'syn_light',
          'desc_fn':  lambda t: synonym_replace(t, ratio=0.10, seed=s),
          'trans_fn': lambda t: synonym_replace(t, ratio=0.10, seed=s+1),
@@ -418,7 +399,7 @@ def get_clean_variants(seed_base=RANDOM_SEED):
          'trans_fn': lambda t: synonym_replace(t, ratio=0.10, seed=s+17),
          'kw_fn':    lambda k: k},
 
-        # ── Synonym + sentence deletion (combined creative transform) ──
+        # ── Synonym + sentence deletion ──
         {'name': 'syn_sent_del',
          'desc_fn':  lambda t: synonym_replace(t, ratio=0.15, seed=s+18),
          'trans_fn': lambda t: sentence_deletion(synonym_replace(t, ratio=0.10, seed=s+19), seed=s+20),
@@ -513,48 +494,6 @@ def augment_class(df, class_name, target_count):
 
 
 # ─────────────────────────────────────────────────────────────
-# EVALUATION HELPER
-# ─────────────────────────────────────────────────────────────
-def evaluate_on_dev(train_df, dev_df, label=''):
-    """
-    Train a Logistic Regression + TF-IDF model on train_df,
-    evaluate on dev_df, and print accuracy + per-class F1 for priority classes.
-    This is the same kind of model as Model 2 in the project.
-    """
-    def combine(df):
-        return (df['description'].fillna('') + ' ' +
-                df['sample_name'].fillna('') + ' ' +
-                df['keywords'].fillna(''))
-
-    X_train = combine(train_df)
-    y_train = train_df['medical_specialty']
-    X_dev   = combine(dev_df)
-    y_dev   = dev_df['medical_specialty']
-
-    vec = TfidfVectorizer(max_features=30000, ngram_range=(1, 2))
-    X_tr_tfidf = vec.fit_transform(X_train)
-    X_dv_tfidf = vec.transform(X_dev)
-
-    clf = LogisticRegression(max_iter=1000, random_state=RANDOM_SEED,
-                             class_weight='balanced')
-    clf.fit(X_tr_tfidf, y_train)
-    y_pred = clf.predict(X_dv_tfidf)
-
-    acc    = accuracy_score(y_dev, y_pred)
-    report = classification_report(y_dev, y_pred, zero_division=0, output_dict=True)
-
-    print(f"  {label}")
-    print(f"    Overall Accuracy : {acc*100:.2f}%")
-    print(f"    Macro F1         : {report['macro avg']['f1-score']*100:.2f}%")
-    for cls in ['Dermatology', 'Psychiatry-Psychology', 'Ophthalmology', 'Neurosurgery']:
-        f1  = report.get(cls, {}).get('f1-score', 0.0)
-        sup = report.get(cls, {}).get('support', 0)
-        print(f"    {cls:<30} F1={f1*100:.1f}%  (support={sup})")
-
-    return acc, report
-
-
-# ─────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────
 def main():
@@ -567,50 +506,25 @@ def main():
     print(f"\nTotal records after cleaning : {len(df)}")
     print(f"Number of classes            : {df['medical_specialty'].nunique()}")
 
-    # ── Dev split (20% from original data only — never augmented) ──
-    train_orig, dev_df = split_train_heldout(df)
+    # ── Training portion of the fixed split (the held-out records are never a source) ──
+    train_orig, heldout_df = split_train_heldout(df)
     print(f"Train (original)             : {len(train_orig)}")
-    print(f"Dev (held out, never touched): {len(dev_df)}")
+    print(f"Held out (never a source)    : {len(heldout_df)}")
 
-    # ── BASELINE evaluation (no augmentation) ──
+    # ── Generate synthetic records for every class below TARGET_COUNT ──
     print("\n" + "=" * 60)
-    print("STEP 1: Baseline (no augmentation)")
+    print(f"Generating synthetic records for all classes < {TARGET_COUNT}")
     print("=" * 60)
-    acc_base, _ = evaluate_on_dev(train_orig, dev_df, label='No augmentation:')
+    class_counts = df['medical_specialty'].value_counts()
+    classes_to_augment = class_counts[class_counts < TARGET_COUNT].index.tolist()
 
-    # ── Generate AUGMENTED records ──
-    print("\n" + "=" * 60)
-    print("STEP 2: Generating augmented records for all classes < 400")
-    print("=" * 60)
-    
-    # Augment all classes that are below the TARGET_COUNT
-    classes_to_augment = df['medical_specialty'].value_counts()
-    classes_to_augment = classes_to_augment[classes_to_augment < TARGET_COUNT].index.tolist()
-    
     aug_parts = []
     for cls in classes_to_augment:
         aug = augment_class(train_orig, cls, TARGET_COUNT)
         if not aug.empty:
             aug_parts.append(aug)
-
     aug_df = pd.concat(aug_parts, ignore_index=True) if aug_parts else pd.DataFrame()
-    train_aug = (pd.concat([train_orig, aug_df], ignore_index=True)
-                 .sample(frac=1, random_state=RANDOM_SEED)
-                 .reset_index(drop=True))
-
-    # ── Evaluate with augmentation ──
-    print("\n" + "=" * 60)
-    print("STEP 3: Evaluation with all augmentation variants")
-    print("=" * 60)
-    acc_aug, _ = evaluate_on_dev(train_aug, dev_df, label='With augmentation:')
-
-    # ── Summary ──
-    print("\n" + "=" * 60)
-    print("SUMMARY — DEV SET COMPARISON")
-    print("=" * 60)
-    print(f"  No augmentation : {acc_base*100:.2f}%")
-    print(f"  Augmentation    : {acc_aug*100:.2f}%   (Δ {(acc_aug - acc_base)*100:+.2f}%)")
-    print()
+    train_aug = pd.concat([train_orig, aug_df], ignore_index=True)
 
     # ── Class distribution before/after ──
     print("\n" + "=" * 60)

@@ -1,22 +1,14 @@
 """
-M4_error_analysis.py
-====================
-Looks at the mistakes of Model 4 on the held-out records, for the Results and Discussion
-sections of the paper. No training: it reads results/m4_heldout_predictions.csv.
+M4_error_analysis.py: errors of Model 4 on the held-out records (for Results and Discussion).
 
-WHAT IT DOES:
-    1. draws the confusion matrix of Model 4 (abbreviated labels) -> ../figures/fig2_confusion_matrix.png
-    2. prints the per-class precision / recall / F1 of Model 4
-    3. prints the most frequent confusions, and how the errors split by kind of record
-       (with / without a first keyword, with / without a copy of the note in the training portion)
-    4. prints the text of the most frequent confusions (one example per pair) for the Discussion
-
-HOW TO RUN (from 26/code/, after M4_final_system.py):
-    python3 M4_error_analysis.py
+Reads:   results/m4_heldout_predictions.csv (no training).
+Prints:  per-class precision, recall and F1; the errors by kind (with or without a first keyword, note also
+         present in the training portion); the most frequent confusions, with one example of each.
+Writes:  ../figures/fig2_confusion_matrix.png (abbreviated labels).
+Run:     python3 M4_error_analysis.py        (after M4_final_system.py)
 """
 
 import os
-import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
@@ -24,7 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 
 from data_utils import load_train, split_train_heldout, first_keyword_label
-from evaluation import RESULTS_DIR
+from model_utils import RESULTS_DIR
 
 ABBREVIATION = {
     'Cardiovascular-Pulmonary': 'CV-Pulm', 'Dermatology': 'Derm', 'Gastroenterology': 'Gastro',
@@ -47,9 +39,12 @@ def main():
     cm = confusion_matrix(held['medical_specialty'], held['pred'], labels=classes)
     fig, ax = plt.subplots(figsize=(5.2, 4.4))
     ax.imshow(cm, cmap='Blues')
-    ax.set_xticks(range(len(names))); ax.set_xticklabels(names, rotation=45, ha='right', fontsize=7)
-    ax.set_yticks(range(len(names))); ax.set_yticklabels(names, fontsize=7)
-    ax.set_xlabel('Predicted', fontsize=8); ax.set_ylabel('True', fontsize=8)
+    ax.set_xticks(range(len(names)))
+    ax.set_xticklabels(names, rotation=45, ha='right', fontsize=7)
+    ax.set_yticks(range(len(names)))
+    ax.set_yticklabels(names, fontsize=7)
+    ax.set_xlabel('Predicted', fontsize=8)
+    ax.set_ylabel('True', fontsize=8)
     for i in range(len(names)):
         for j in range(len(names)):
             if cm[i, j]:
@@ -58,7 +53,8 @@ def main():
     fig.tight_layout()
     os.makedirs(os.path.join('..', 'figures'), exist_ok=True)
     out = os.path.join('..', 'figures', 'fig2_confusion_matrix.png')
-    fig.savefig(out, dpi=200); plt.close(fig)
+    fig.savefig(out, dpi=200)
+    plt.close(fig)
     print(f"Saved {out}\n")
 
     # ── 2. Per class ──
